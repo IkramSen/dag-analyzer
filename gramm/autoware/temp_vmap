@@ -1,0 +1,2 @@
+Node cpu_init_8(C=0, TAG=CPU,tra="lll");
+Node sub_func(C=0, TAG=CPU,tra="lll");

@@ -1,0 +1,28 @@
+digraph mon_graphe {
+
+v12 [shape=circle]
+v11 [shape=circle]
+v10 [shape=circle]
+v9 [shape=circle]
+v8 [shape=rectangle]
+v7 [shape=diamond]
+v6 [shape=circle]
+v5 [shape=circle]
+v4 [shape=circle]
+v3 [shape=circle]
+v2 [shape=rectangle]
+v1 [shape=circle]
+v10->v7
+v9->v7
+v8->v10
+v8->v9
+v7->v12
+v7->v11
+v6->v7
+v5->v8
+v4->v5
+v3->v6
+v2->v4
+v2->v3
+v1->v2
+}

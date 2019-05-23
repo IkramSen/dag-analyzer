@@ -1,0 +1,57 @@
+Node cpu_init_8(C=0, TAG=CPU,tra="lll");
+Node sub_func(C=0, TAG=CPU,tra="lll");
+sGraph create_fine_vmap;
+create_fine_vmap={
+  cpu_init_8; 
+
+  if (c){
+    find_nearest_point;
+
+  }else {
+    find_departure_point;
+  }
+  if (cc){
+    if (ccc){
+      find_nearest_point; 
+    }else {
+      find_arrival_point;
+		 
+    }
+  }
+  if ( ccc) { 
+    find_lane; 
+    if (cccccc){
+      sub_func_1;
+      find_end_point;
+      if (point_pid)
+	{
+	  cpu_func ;
+	  is_branching_lane;
+	  if (lane) {
+	    find_end_point; 
+	    if (cc){
+	      find_nearest_point; 
+	      if (coarse_p1_pid){
+		sub_func; 
+		if (distance_condition){
+		  compute_direction_angle; 
+		  if (sdsd) {
+		    find_next_branching_lane; 
+		  } else {
+		    find_next_branching_lane;
+		  }
+		}
+		else {
+		  find_next_lane;
+		}
+		if (lane_lnid_condition){ 
+
+		  subfunc;}
+		exitint_func;
+	      }
+	    }
+	  }
+	}
+    }
+  }
+};
