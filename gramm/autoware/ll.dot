@@ -1,0 +1,90 @@
+digraph mon_graphe {
+
+cpu_sync_CD_0 [ ]
+cond [shape=diamond]
+computePointGradients_gpu [ ]
+
+ALT17 [shape=rectangle]
+ALT18 [shape=rectangle]
+ALT54 [shape=rectangle]
+hessian_2 [shape=diamond]
+hessian_3 [shape=diamond]
+
+computeHessian_cpu1 [ ]
+computeHessian_gpu [ ]
+ALT23 [shape=rectangle]
+cpu_sync_CT_1 [ ]
+computeHessian_cpu542 [ ]
+computeHessian_gpu43 [ ]
+ALT2344 [shape=rectangle]
+cpu_sync_CD_1 [ ]
+exit_2 [ ]
+
+cpu_sync_CD_0->cond
+cond->ALT17
+cond->exit_2
+#computePointGradients_gpu->hessian_2
+
+
+
+computePointGradients_cpu_sca->CPG_C_p1
+computePointGradients_cpu_sca->CPG_C_p2
+computePointGradients_cpu_sca->CPG_C_p3
+computePointGradients_cpu_sca->CPG_C_p4
+CPG_C_p1->CPG_C_gat
+CPG_C_p2->CPG_C_gat
+CPG_C_p3->CPG_C_gat
+CPG_C_p4->CPG_C_gat
+CPG_C_gat->hessian_2
+
+
+ALT17->mem_cpy_1
+mem_cpy_1->computePointGradients_gpu
+computePointGradients_gpu->ALT18
+
+ALT18->mem_cpy->hessian_2
+
+#ALT18->hessian_3->computeHessian_gpu
+computeHessian_gpu->ALT54->mem_cpy_3->cpu_sync_CT_1
+ALT54->computeHessian_gpu43
+
+ALT18->hessian_3->computeHessian_gpu
+
+hessian_3->cpu_sync_CD_1
+
+
+
+ALT17->computePointGradients_cpu_sca
+hessian_2-> cpu_sync_CD_1
+hessian_2->ALT23
+
+
+computeHessian_cpu1->CH_C_P1
+computeHessian_cpu1->CH_C_P2
+computeHessian_cpu1->CH_C_P3
+
+CH_C_P1->cpu_sync_CT_1
+CH_C_P2->cpu_sync_CT_1
+CH_C_P3->cpu_sync_CT_1
+
+
+
+ALT23->computeHessian_cpu1
+ALT23->computeHessian_gpu
+cpu_sync_CT_1->ALT2344
+
+computeHessian_cpu542->CH_C_2_P1
+computeHessian_cpu542->CH_C_2_P2
+computeHessian_cpu542->CH_C_2_P3
+
+CH_C_2_P1->cpu_sync_CD_1
+CH_C_2_P2->cpu_sync_CD_1
+CH_C_2_P3->cpu_sync_CD_1
+
+computeHessian_gpu43->mem_cpy_4->cpu_sync_CD_1
+
+ALT2344->computeHessian_cpu542
+
+ALT2344->computeHessian_gpu43
+cpu_sync_CD_1->exit_2
+}

@@ -3,7 +3,7 @@ CFLAGS  =  -Wall
 CFLAGS += -Wextra
 CFLAGS += -Wno-unused-parameter
 
-LDFLAGS = -lpthread
+LDFLAGS = -lpthread   -D_GNU_SOURCE
 
 INCLUDIR = -I inc
 
@@ -17,7 +17,7 @@ EXEC  = main
 
 all: $(EXEC)
 
-main: $(OBJDIR)/main.o $(OBJDIR)/time_utils.o $(OBJDIR)/affinity.o
+main: $(OBJDIR)/main.o $(OBJDIR)/tasks.o $(OBJDIR)/time_utils.o  $(OBJDIR)/affinity.o
 
 % :$(OBJDIR)/%.o
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LDFLAGS)

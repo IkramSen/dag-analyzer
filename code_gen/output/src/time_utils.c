@@ -1,13 +1,24 @@
 #include <time_utils.h>
 
+
+
+
 void timespec_add_us(struct timespec *t, long us)
 {
-  t->tv_nsec += us*1000;
+
+  t->tv_sec += us/1000000;
+  t->tv_nsec += us%1000000;  
   if (t->tv_nsec > 1000000000) {
     t->tv_nsec = t->tv_nsec - 1000000000;
     t->tv_sec += 1;
   }
 }
+
+void print_spec(struct timespec *t)
+{
+  printf("[ tv_sec: %lu, tv_nsec:  %lu @ \n",t->tv_sec, t->tv_nsec);
+}
+
 
 int timespec_cmp(struct timespec *a, struct timespec *b)
 {
@@ -30,4 +41,8 @@ int timespec_sub(struct timespec *d, struct timespec *a, struct timespec *b)
     d->tv_sec -= 1;
   }
   return 1;
+}
+
+
+void move_data(void * p, int size){
 }

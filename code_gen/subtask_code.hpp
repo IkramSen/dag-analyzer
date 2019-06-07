@@ -3,7 +3,16 @@
 
 #include "../task/subtask.hpp"
 #include "../common/list.hpp"
+#include "../task/buffer.hpp"
 #include <string>
+
+#define PROTECT_READ 0
+#define PROTECT 0
+#define UNPROTECT 1
+#define PROTECT_WRITE 0 
+
+// Houssam: Faire l'héritage ? ou pas
+
 
 namespace code_generator {
 
@@ -20,12 +29,19 @@ namespace code_generator {
     common::List<std::string> * params;       /* Paramètres de la fonction.     */
     common::List<std::string> * input_semas;  /* Sémaphores de synchronisation pour les prédécesseurs. */
     common::List<std::string> * output_semas; /* Sémaphores de synchronosation pour les successeurs.   */
-
+ 
+    
   public:
-    Subtask_code(std::string label, task::Subtask * v);
+    Subtask_code(task::Subtask * v);
     ~Subtask_code();
     Subtask_code * merge_after(Subtask_code *s);
-    std::string print_subtask();
+    void generate_source(common::List<task::Buffer *> * data_read,
+			 common::List<task::Buffer *> * data_write,
+			 common::List<task::Subtask *> * preds,
+			 common::List<task::Subtask *> * succs,
+			 common::List<std::string > * semphores,
+			 std::ostream* fp_h, std::ostream* fp_c, int alloc);
+    
     task::Subtask * _subtask();
     common::List<Subtask_code *> *  _preds();
     common::List<Subtask_code *> *  _succs();

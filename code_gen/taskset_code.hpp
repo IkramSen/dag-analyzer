@@ -5,6 +5,11 @@
 #include "../task/taskset.hpp"
 #include "../task/task.hpp"
 
+
+#define TOFILE 0
+#define CONSOLE 1
+
+
 namespace code_generator {
 
   class Taskset_code {
@@ -12,7 +17,10 @@ namespace code_generator {
   public:
     Taskset_code();
     ~Taskset_code();
-    std::string print_taskset(task::Taskset *taskset);
+
+    void  generate_source(task::Taskset *taskset, std::string path );
+    void  generate_source(task::Taskset *taskset);
+    void  print_taskset(task::Taskset *taskset, int PRINT_MODE, std::string f_p) ;
   };
 }
 
