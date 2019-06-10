@@ -7,6 +7,9 @@
 #include "taskset.hpp"
 #include "../analysis/analysis_vars.hpp"
 
+#include "buffer.hpp"
+#include "comm.hpp"
+
 #include <fstream>
 #include <math.h>
 #include <cmath>
@@ -32,6 +35,9 @@ namespace platform{
 
 namespace task {
 
+  class Buffer;
+  class Communication;
+  
   class Task {
 
 
@@ -41,20 +47,24 @@ namespace task {
     int T;
     int **graph;
     int TAG;
-
-    common::List<Subtask *> *communications;
+    std::string label;
 
     common::List<Subtask *> *subtasks;
     common::List<Task *> * concretes;
     common::List<Task *> * elems;
     common::List<Task *> * taggeds;
-
+    common::List<Communication *> * comms;
     common::List<common::List<Subtask *> *> *paths;
 
-  
-      
+    
+    
   public:
 
+    void filter_subtasks_between(common::Node<Subtask *> *v_s,
+				 common::Node<Subtask *> *v_d,
+				 common::List<Subtask *> *p,
+				 common::List<common::List<Subtask *> *>  * pp);
+  
     
     Task * copy_partial(int id);
     Task * copy_partial();
@@ -71,7 +81,9 @@ namespace task {
     void link_task_after(Task *);
     void merge_task(Task *);
     int _size();
-
+    std::string _label();
+    void  _label(std::string);
+    
     common::List<Task *> * _concretes();
     void _concretes(common::List<Task *> *conc);
 
@@ -85,9 +97,6 @@ namespace task {
 
     common::List<Subtask *> * _subtasks();
     void _subtasks(common::List<Subtask *> * subtask);
-
-    common::List<Subtask *> * _communications();
-    void _communications(common::List<Subtask *> * com);
 
     common::List<common::List<Subtask *> *> * _paths();
     void _paths(common::List<common::List<Subtask *> *> * paths);
@@ -104,6 +113,8 @@ namespace task {
     int _D();
     void _D(int deadline);
 
+    Task * part_task_between(common::Node<Subtask *> * v_s , common::Node<Subtask *> * v_d);
+    bool is_linked(common::Node<Subtask *> *v_1, common::Node<Subtask *> *v_2);
 
     // common use
     common::List<Subtask *> * successors(common::Node<Subtask *> *v);
@@ -166,6 +177,16 @@ namespace task {
     bool to_dot(std::string );
     void display();
     common::List<Task *> *generate_one(Subtask *c);
+    common::List<Communication *> * _comms();
+    void _comms(common::List<Communication *> * comms);
+    
+
+    void add_communication(Communication * comm);
+
+    common::List<Buffer *> * filter_by_src(Subtask * src);
+    common::List<Buffer *> * filter_by_dst(Subtask * dst);
+
+    
   };
 }
 

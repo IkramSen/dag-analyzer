@@ -1,5 +1,6 @@
 #include "task.hpp"
 
+
 //#define DEBUG
 
 #define EXACT_PREEMP  0
@@ -10,11 +11,118 @@
 
 namespace task {
 
+  /** 
+   * Check's wiether two vertices are linked or not
+   * @param v_1 The source subtask 
+   * @param v_2 The destination subtask 
+   * @return True if the v_1 and v_2 are linked, otherwise it returns false 
+   */
+  bool Task::is_linked(common::Node<Subtask *> *v_1, common::Node<Subtask *> *v_2){
+    return this->graph[v_1->t_id][v_2->t_id]!=0;
+  }
+  
+
+  /**
+   * getter of label 
+   */
+  std::string Task::_label(){
+    return this->label;
+  }
+
+
+  
+  
+  /**
+   * setter of buffer
+   * @param buff The buffer to set 
+   */
+
+  void Task::add_communication(Communication * comm){
+    this->comms->add_at_tail(new common::Node<Communication * >(comm));
+  }
+
+
+
+  
+
+  /**
+   * Get the list of buffers as function of source node 
+   * @param src The source node initiating the communication 
+   * @return The list of buffers initiated by src 
+   */
+  common::List<Buffer *> * Task::filter_by_src(Subtask * src){
+    common::List<Buffer *> *  to_ret = new   common::List<Buffer *>();
+    common::Node<Communication *> * curr = comms-> head; 
+    for (int i=0;i<comms->size;i++){
+      if (curr->el->_src()==src)
+	if (!to_ret->contains(curr->el->_buff()))
+	  to_ret->add_at_tail(new common::Node<Buffer *>(curr->el->_buff()));
+      curr = curr->next;
+    }
+    return to_ret;
+  }
+
+  /**
+   * Get the list of buffers as function of destination node node 
+   * @param dst The destination node reading  the communication 
+   * @return The list of buffers read by dst node  
+   */
+  common::List<Buffer *> * Task::filter_by_dst(Subtask * dst){
+
+    common::List<Buffer *> *  to_ret = new   common::List<Buffer *>();
+    
+    common::Node<Communication *> * curr = comms-> head;
+    
+    for (int i=0;i<comms->size;i++){
+      if (curr->el->_dst()==dst)
+	if (!to_ret->contains(curr->el->_buff()))
+	    to_ret->add_at_tail(new common::Node<Buffer *>(curr->el->_buff()));
+	
+      curr = curr->next;
+    }
+    return to_ret; 
+  }
+
+  
+
+  
+
+
+  /**
+   * setter of label
+   * @param label The label to set 
+   */
+  
+  void  Task::_label(std::string label){
+    this->label=label;
+  }
+
+
+
+
+  /**
+   * getter of buffers 
+   */  
+  common::List<Communication *> * Task::_comms(){
+    return comms; 
+  }
+  
+
+
+  /**
+   * setter of buffers
+   * @param buff The buffers to set 
+   */
+  
+  void  Task::_comms(common::List<Communication *> * comms){
+    this->comms= comms;  
+  }
+
+  
   /**
    * Copy exactely the same task without sharing structure
    * @return a reference to the new task object 
-   */
-
+   */  
   Task * Task::copy_partial(){
     common::Node<Subtask *> *curr = subtasks->head;
     common::List<Subtask *> *l = new common::List<Subtask *> ();
@@ -37,7 +145,7 @@ namespace task {
   }
 
 
-    /**
+  /**
    * Copy exactely the same task without sharing structure by
    * incrementing incrementing sub-tasks indexes by s_id 
    * @param s_id The index starting params
@@ -63,17 +171,13 @@ namespace task {
       }
     return tau;
   }
-
-
-
   
-  
-    /**
+  /**
    * Links task tau in the current task where all entries of tau are successors of s 
    * @param tau the task to insert 
    * @param the concerned vertex
    */
-    void Task::link_task_after_subtask(Task * tau,Subtask * s ){
+  void Task::link_task_after_subtask(Task * tau,Subtask * s ){
     common::List<Subtask *> * entries = tau->list_entries();
     common::Node<Subtask *> * src = subtasks->find_element(s);
     merge_task(tau);
@@ -84,12 +188,19 @@ namespace task {
     }
   }
 
+  /**
+   * The task constructor using the task id and a list of the subtasks
+   * that it contains
+   * @param id The task id 
+   * @param l The list of subtasks 
+   */
   Task::Task(int id, common::List<Subtask *> *l){
     this->id = id;
     this->subtasks = l;
     TAG = -1;
     D = -1;
     T = -1;
+    label="Task_"+std::to_string(id);
     common::Node <Subtask *> *current = subtasks->head;
     for (int i=0;i<_size();i++){
       current->t_id=i;
@@ -98,92 +209,191 @@ namespace task {
     graph = (int **)malloc(subtasks->size * sizeof(int *));
     for (int i=0; i<_size(); i++)
       graph[i] = (int *)malloc(subtasks->size * sizeof(int));
+
+     for (int i=0; i<_size(); i++)
+       for (int j=0; j<_size(); j++)
+	 graph[i][j] = 0 ; 
+
+    
+    comms = new common::List<Communication *>();
   }
 
+  /** 
+   * Generates a part of the task and all the corresponding Edges 
+   * Between two vertices 
+   * @param v_s The source subtask 
+   * @param v_d The destination subtask 
+   * @return a the sub graph of the current task between v_s and v_d 
+   */ 
+  Task * Task::part_task_between(common::Node<Subtask *> * v_s , common::Node<Subtask *> * v_d){
+
+    common::List<Subtask *> *p= new common::List<Subtask *>();
+    common::List<common::List<Subtask *> *> * pp =  new common::List<common::List<Subtask *> *>();
+    filter_subtasks_between(v_s,v_d, p, pp);  
+    common::List <Subtask *> * merged = pp->head->el->copy();
+    common::Node<common::List<Subtask *> *> * curr; 
+    curr = pp->head;
+    for (int i=0;i<pp->size-1;i++){
+      merged->merge_without_duplicates(curr->next->el->copy());
+      curr= curr->next;
+    }
+    merged->add_at_tail(new common::Node<Subtask *>(v_d->el));
+    Task * tau_  = new Task(-1, merged);
+    for (int i=0;i<_size();i++){
+      for (int j=0;j<_size();j++){
+	if (i==j)
+	  continue;      
+	if (merged->contains(_subtasks()->get(i)->el) && merged->contains(_subtasks()->get(j)->el)){
+	  if ( is_linked(_subtasks()->get(i), _subtasks()->get(j)))
+	    tau_->link_two_subtasks(tau_->_subtasks()->find_element(_subtasks()->get(i)->el),
+				    tau_->_subtasks()->find_element(_subtasks()->get(j)->el));
+	}   
+      }    
+    }
+    return tau_;
+  }
+
+
   
+
+  /**
+   * The task destructor 
+   */
   Task::~Task(){
     // do not forget to destroy the malloc of the grap table !!
     // do not forget to destroy all the conc and sep.
   }
 
-  // getters and setters
+  /** 
+      Getter of Period T 
+  */ 
   int Task::_T(){
     return T;
   }
 
+  /**  
+   * setter of  T 
+   * @param T The Period T to set 
+   */
   void  Task::_T(int period){
     this->T = period;
   }
 
+  /** 
+      Getter of D 
+  */ 
   int Task::_D(){
     return this->D;
   }
-
+  /**  
+   * setter of D 
+   * @param D The D to set 
+   */
   void  Task::_D(int deadline){
     this->D = deadline;
   }
 
+  /** 
+      Getter of subtasks list 
+  */ 
   common::List<Subtask *> * Task::_subtasks(){
     return this->subtasks;
   }
+  /**  
+   * setter of subtasks list 
+   * @param subtasks  The subtasks list to set 
+   */
   void Task::_subtasks(common::List<Subtask *> * subtask){
     this->subtasks = subtask;
   }
+   
 
- 
-
-  common::List<Subtask *> * Task::_communications(){
-    return this->communications;
-  }
-  void Task::_communications(common::List<Subtask *> * com){
-    this->communications = communications;
-  }
-
-  
+  /** 
+      Getter of concrete task list 
+  */ 
   common::List<Task *> * Task::_concretes(){
     return this->concretes;
   }
+  /**  
+   * setter of concretes task list 
+   * @param conc Concrete task list to set 
+   */
   void Task::_concretes(common::List<Task *> * conc){
     this->concretes = conc;
   }
 
+  /** 
+      Getter of tagged tasks list 
+  */ 
   common::List<Task *> * Task::_taggeds(){
     return this->taggeds;
   }
+  /**  
+   * setter of taggeds tasks lists 
+   * @param taggeds tasks lists to set 
+   */
   void Task::_taggeds(common::List<Task *> * taggeds){
     this->taggeds = taggeds;
   }
 
 
+  /** 
+      Getter of Elems Elementary tasks list 
+  */ 
   common::List<Task *> * Task::_elems(){
     return this->elems;
   }
+  /**  
+   * setter of Elems Elmentary task list 
+   * @param Elems Elmentary task list 
+   */
   void Task::_elems(common::List<Task *> * elem){
     this->elems = elem;
   }
 
+  /**  
+   * setter of Tag 
+   * @param Tag The Tag to set 
+   */
   void Task::_tag(int TAG){
     this->TAG = TAG;
   }
 
+  /**  
+   * setter of Tag 
+   * @param Tag The Tag to set 
+   */
   int Task::_tag(){
     return this->TAG;
   }
 
+  /** 
+      Getter of paths List of paths 
+  */ 
   common::List<common::List<Subtask *> *> * Task::_paths(){
     return this->paths;
   }
+  /**  
+   * setter of path List of paths 
+   * @param path List of paths The path List of paths to set 
+   */
   void Task::_paths(common::List<common::List<Subtask *> *> * path){
     this->paths = path;
   }
 
+  /** 
+      Getter of Graph Graph structure 
+  */ 
   int **Task::_graph(){
     return this->graph;
   }
 
   
   
-
+  /**  
+   * setter of Graph The graph structure 
+   * @param Graph The  structure to set 
+   */
   void Task::_graph(int **g){
     this->graph = g;
   }
@@ -415,11 +625,7 @@ namespace task {
 	return true;
     }
     return false;
-  }
-
-
-  
-  
+  }  
 
   // looks for a given task using one of its subtasks
   /**
@@ -437,8 +643,6 @@ namespace task {
     }
     return NULL;
   }
-
- 
 
   // Splits a task according to two and only two  successors
   /**
@@ -493,11 +697,6 @@ namespace task {
 #endif
     return ts;
   }
-
-
-
-
- 
   
   /**
    * Generate concrete or elementary task
@@ -597,8 +796,6 @@ namespace task {
     return preemption_cost_shorter_deadlines(v->D,gs);
   }
 
-
-  // Allocation heuristics  ***********************************************************
   /**
    * Looks if the subtask has to be prempt (has non-empty predeccesor ) or not
    * @param v The given subtask node
@@ -735,7 +932,6 @@ namespace task {
 
 
 
-
   /**
    * Calculate the task execution time.
    *
@@ -754,13 +950,8 @@ namespace task {
     return c;
   }
 
-
-
-
   /**
-   * Calculate the task volume.
-   *
-   * Calculate the task volume by taking the max subtask execution time.
+   * Calculate the task volume by taking the max possible subtask execution time.
    *
    * @return The task volume
    */
@@ -774,10 +965,6 @@ namespace task {
     return C;
 
   }
-
-
-  
-
 
   
   // This function generates the paths starting from a  node
@@ -794,6 +981,7 @@ namespace task {
    * @param v The starting subtask node
    * @param p The already existing path (can be empty)
    */
+  
   void Task::generate_single_path(common::Node<Subtask *> *v, common::List<Subtask *> *p){
     if(v->el->_type() != CONDITION && v->el->_type() != ALTERNATIVE)
       p->add_at_tail(new common::Node<Subtask *>(v->el));
@@ -822,7 +1010,91 @@ namespace task {
     delete succs;
   }
 
+
+  // This function generates the paths starting from a  node
+  /**
+   * Generate the paths starting from a subtask node and an path
+   *
+   * Recursively generate the paths from a subtask node. The algorithm :
+   *  1. Add the subtask to the path if it's neither an Conditionnal node nor Alternative node
+   *  2. Look the number of succesors of this node and :
+   *      - If its 0 (sink node) add the path to the paths list
+   *      - If its 1 recursively call this function with the successor node and the updated path
+   *      - If ist more than 1 recursively call this function for each successor node and an copy af the updated path.
+   *
+   * @param v The starting subtask node
+   * @param p The already existing path (can be empty)
+   */
+  
+  void Task::filter_subtasks_between(common::Node<Subtask *> *v_s,
+				     common::Node<Subtask *> *v_d,
+				     common::List<Subtask *> *p, common::List<common::List<Subtask *> *> * pp){
+    printf("calling back \n");
+    v_s->display(); 
+    p->add_at_tail(new common::Node<Subtask *>(v_s->el));
  
+    common::List<Subtask *> *succs = successors(v_s);
+    if (succs->size == 0 ){
+      printf("arrived at the end \n");
+      common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
+      if (v_s->el ==v_d->el)
+	{
+	  printf("found than adding \n");
+	  pp->add_at_head(node);
+	}
+      delete succs;
+      return;
+    }
+    else {
+      printf("not yet the end \n");
+      if (succs->size==1){
+	printf("I have only one succ \n");
+	if (succs->head->el==v_d->el){
+	  printf("it is the right one \n");
+	  common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
+	  pp->add_at_head(node);
+	  delete succs;
+	  return;
+	}else {
+	  printf("not the write one, I continue the generation \n");
+	  filter_subtasks_between(new common::Node<Subtask *>(succs->head, SAVE),v_d,p, pp);
+	   //	  generate_single_path(succs->head,p);
+	  delete succs;
+	  return;
+	}
+	
+      } else {
+	printf("I have multiple succ \n");
+	common::Node<Subtask *>* current = succs->head;
+	for (int i=0;i<succs->size;i++){
+	  if (current->el == v_d->el){
+	    printf("I found my destination \n");
+	    common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
+	    pp->add_at_head(node);
+	    delete succs;
+	    return;
+	  }
+	  else {
+	    printf(" destination not found \n");
+	    common::List<Subtask *> *p_= p->copy();
+	    filter_subtasks_between(new common::Node<Subtask *>(current, SAVE),v_d,p_, pp);
+	    current = current->next;
+	  }
+	}
+      }
+    }
+    delete p;
+    delete succs;
+  }
+
+
+
+
+
+
+
+
+  
   /**
    * Generate all the paths for the task.
    * @return The paths generation succeed
@@ -1048,8 +1320,8 @@ namespace task {
    * @return true if the assignment end well, false otherwise
    */
   bool Task::deadline_single_task(int METHOD){
-    // Assign deadline 0 to tasks having a nuull execution time to
-    // avoid reducing the performances of the fair method 
+    // Houssam: Assign deadline 0 to tasks having a nuull execution time to
+    // Houssam: avoid reducing the performances of the fair method 
     for (int i=0;i<subtasks->size;i++){
       common::Node<Subtask *> *curr_subtask = subtasks->get(i);
       if (curr_subtask->el->_C() == 0)
@@ -1198,10 +1470,6 @@ namespace task {
     return true;
 
   }
-
-
-
-  
     
   /**
    * Sort the concretes task using the given order
@@ -1291,9 +1559,7 @@ namespace task {
    * (This function should be used after calling the tagged tasks generations )
    * @param TAG is the tag to get 
    * @return the tagged task  
-   **/
-
-  
+   **/  
   Task * Task::get_tagged_task(int TAG) {
     if(taggeds->size == 0){
       return  NULL;
@@ -1305,6 +1571,8 @@ namespace task {
     }
     return NULL;
   }
+
+  
   /**
    * Compute the slack for the given list of subtasks.
    *
@@ -1363,9 +1631,6 @@ namespace task {
     return to_ret;
   }
 
-
-
-
   /**
    * Gives the number of subtasks
    *
@@ -1381,7 +1646,9 @@ namespace task {
    * @param path The path the file will be writen to
    * @return The dot file has been successfully created
    */
+
   bool Task::to_dot(std::string path){
+    
 #ifdef DEBUG
     std::cout<<"-> Calling to dot for task: "<<id<<"\n";
 #endif
@@ -1440,4 +1707,5 @@ namespace task {
     }
     std::cout<<std::endl;
   }
+  
 }

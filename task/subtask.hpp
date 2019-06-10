@@ -7,9 +7,11 @@
 #include <string>
 
 #define CONDITION 0
+#define CCONDITION 4
 #define ALTERNATIVE 1
 #define COMPUTE 2
 #define DUMMY 3
+
 namespace task {
   class Subtask {
   private:
