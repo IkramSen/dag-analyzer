@@ -19,6 +19,10 @@ void print_spec(struct timespec *t)
   printf("[ tv_sec: %lu, tv_nsec:  %lu @ \n",t->tv_sec, t->tv_nsec);
 }
 
+int random_between(int a, int b)
+{
+  return  rand()%20-10;
+}
 
 int timespec_cmp(struct timespec *a, struct timespec *b)
 {

@@ -8,28 +8,29 @@
 #include "code_gen/subtask_code.hpp"
 #include "code_gen/taskset_code.hpp"
 
-#define CPU   0
-#define GPU   1
-#define IGPU  2
-#define DLA   3
-#define PVA   4
 
 int main(int arc, char** argv) {
 
   // Instantiation of a graph nodes, i. e. the graph subtask.
-  common::Node<task::Subtask *> *v1  = new common::Node<task::Subtask *>(new task::Subtask(1, 5, 1, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v2  = new common::Node<task::Subtask *>(new task::Subtask(2, 5, 2, ALTERNATIVE, GPU));
-  common::Node<task::Subtask *> *v3  = new common::Node<task::Subtask *>(new task::Subtask(3, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v4  = new common::Node<task::Subtask *>(new task::Subtask(4, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v5  = new common::Node<task::Subtask *>(new task::Subtask(5, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v6  = new common::Node<task::Subtask *>(new task::Subtask(6, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v7  = new common::Node<task::Subtask *>(new task::Subtask(7, 5, 2, CONDITION, GPU));
-  common::Node<task::Subtask *> *v8  = new common::Node<task::Subtask *>(new task::Subtask(8, 5, 2, ALTERNATIVE, GPU));
-  common::Node<task::Subtask *> *v9  = new common::Node<task::Subtask *>(new task::Subtask(9, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v10 = new common::Node<task::Subtask *>(new task::Subtask(10, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v11 = new common::Node<task::Subtask *>(new task::Subtask(11, 5, 2, COMPUTE, GPU));
-  common::Node<task::Subtask *> *v12 = new common::Node<task::Subtask *>(new task::Subtask(12, 5, 2, COMPUTE, GPU));
-
+  common::Node<task::Subtask *> *v1  = new common::Node<task::Subtask *>(new task::Subtask(1, 5, 1, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v2  = new common::Node<task::Subtask *>(new task::Subtask(2, 5, 2, CONDITION, CPU));
+  common::Node<task::Subtask *> *v3  = new common::Node<task::Subtask *>(new task::Subtask(3, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v4  = new common::Node<task::Subtask *>(new task::Subtask(4, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v5  = new common::Node<task::Subtask *>(new task::Subtask(5, 5, 2, CONDITION, CPU));
+  common::Node<task::Subtask *> *v6  = new common::Node<task::Subtask *>(new task::Subtask(6, 5, 2, CONDITION, CPU));
+  common::Node<task::Subtask *> *v7  = new common::Node<task::Subtask *>(new task::Subtask(7, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v8  = new common::Node<task::Subtask *>(new task::Subtask(8, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v9  = new common::Node<task::Subtask *>(new task::Subtask(9, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v10 = new common::Node<task::Subtask *>(new task::Subtask(10, 5, 2, COMPUTE, CPU));
+  common::Node<task::Subtask *> *v11 = new common::Node<task::Subtask *>(new task::Subtask(11, 5, 2, CCONDITION, CPU));
+  v11->el->_silent_subtask(v5->el);
+  common::Node<task::Subtask *> *v12 = new common::Node<task::Subtask *>(new task::Subtask(12, 5, 2, CCONDITION, CPU));
+    v12->el->_silent_subtask(v6->el);
+  common::Node<task::Subtask *> *v13 = new common::Node<task::Subtask *>(new task::Subtask(13, 5, 2, COMPUTE, CPU));
+  v13->el->_silent_subtask(v4->el);
+  common::Node<task::Subtask *> *v14 = new common::Node<task::Subtask *>(new task::Subtask(14, 5, 2, CCONDITION, CPU));
+  v14->el->_silent_subtask(v2->el);
+    common::Node<task::Subtask *> *v15 = new common::Node<task::Subtask *>(new task::Subtask(15, 5, 2, COMPUTE, CPU));
   // Add all graph nodes to a list.
   common::List<task::Subtask *> *l = new common::List<task::Subtask *>();
   l->add_at_head(v1);
@@ -44,35 +45,59 @@ int main(int arc, char** argv) {
   l->add_at_head(v10);
   l->add_at_head(v11);
   l->add_at_head(v12);
+  l->add_at_head(v13);
+  l->add_at_head(v14);
+ 
 
   // Instantiation of a task with the subtask list.
   task::Task *tau = new task::Task(1,l);
-
+  tau->_D(1000000);
+  tau->_T(2000000);
   // Link every node with each others.
-  tau->link_two_subtaks(v1,v2);
-  tau->link_two_subtaks(v2,v3);
-  tau->link_two_subtaks(v2,v4);
-  tau->link_two_subtaks(v4,v5);
-  tau->link_two_subtaks(v3,v6);
-  tau->link_two_subtaks(v5,v8);
-  tau->link_two_subtaks(v8,v9);
-  tau->link_two_subtaks(v8,v10);
-  tau->link_two_subtaks(v10,v7);
-  tau->link_two_subtaks(v9,v7);
-  tau->link_two_subtaks(v6,v7);
-  tau->link_two_subtaks(v7,v11);
-  tau->link_two_subtaks(v7,v12);
+  tau->link_two_subtasks(v1,v2);
+  tau->link_two_subtasks(v2,v3);
+  tau->link_two_subtasks(v3,v14);
+  tau->link_two_subtasks(v2,v4);
+  tau->link_two_subtasks(v4,v5);
+  tau->link_two_subtasks(v4,v6);
+  tau->link_two_subtasks(v5,v7);
+  tau->link_two_subtasks(v5,v8);
+  tau->link_two_subtasks(v6,v9);
+  tau->link_two_subtasks(v6,v10);
 
-  // Draw the graph for debugging.
-  tau->to_dot("/tmp/tau.dot");
+  tau->link_two_subtasks(v7,v11);
+  tau->link_two_subtasks(v8,v11);
+  
+  tau->link_two_subtasks(v9,v12);
+  tau->link_two_subtasks(v10,v12);
+  
+  tau->link_two_subtasks(v12,v13);
+  tau->link_two_subtasks(v11,v13);
+  
+  tau->link_two_subtasks(v12,v13);
+  tau->link_two_subtasks(v13,v14);
+  
 
-  // Instantiation of a taskset with the task.
-  task::Taskset *taskset = new task::Taskset(1);
+
+
+
+  
+
+  
+  tau->_D(1000000);
+  tau->_T(2000000);
+
+
+
+  tau->to_dot("/tmp/arb.dot");
+  
+  task::Taskset *taskset = new task::Taskset();
+
   taskset->_list()->add_at_tail(new common::Node<task::Task *>(tau));
 
-  // Instantiation of a new taskset code class
+  
   code_generator::Taskset_code *taskset_code = new code_generator::Taskset_code();
 
   // Print to stdout the task code set.
-  std::cout << taskset_code->print_taskset(taskset) << std::endl;
+  taskset_code->generate_source(taskset,"code_gen/output/");
 }

@@ -17,7 +17,45 @@ namespace task {
     this->TAG=tag;
     this->label = "v"+ std::to_string(id) ;
   }
-  
+
+
+  Subtask * Subtask::_silent_subtask(){
+    return silent_subtask; 
+  }
+  void Subtask::_silent_subtask( Subtask *  v){
+    silent_subtask = v;
+  }
+
+
+  /** 
+      Getter of sema_left 
+  */ 
+  std::string Subtask::_sema_left(){
+    return sema_left;
+  }
+  /**  
+   * setter of sl sema_left 
+   * @param sl sema_left The sl sema_left to set 
+   */
+  void Subtask::_sema_left( std::string sl){
+    sema_left = sl;
+  }
+
+  /** 
+      Getter of sema_right 
+  */ 
+  std::string Subtask::_sema_right(){
+    return sema_right;
+  }
+  /**  
+   * setter of sr sema_right 
+   * @param sr sema_right The sr sema_right to set 
+   */
+  void Subtask::_sema_right( std::string sr){
+    sema_right  = sr ;
+  } 
+ 
+
   /** 
    * The desctructor of the subtask 
    */ 

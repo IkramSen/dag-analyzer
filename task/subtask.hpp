@@ -18,7 +18,20 @@ namespace task {
     int id, C, PC, type, TAG;
     double w;
     std::string label;
+    Subtask * silent_subtask;
+    std::string sema_left;
+    std::string sema_right;
+    
   public:
+    std::string _sema_left();
+    void _sema_left( std::string sl);
+    std::string _sema_right();
+    void _sema_right( std::string sl);
+
+    
+    Subtask * _silent_subtask();
+    void _silent_subtask( Subtask *  v);
+
     std::map<std::string,std::string>  * properties;
     int _id();
     int _C();

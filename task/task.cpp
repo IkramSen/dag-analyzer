@@ -3,14 +3,67 @@
 
 //#define DEBUG
 
-#define EXACT_PREEMP  0
-#define APROX_PREEMP  1
-#define EXACT_NPEEMP  2
 
 //using namespace common;
 
 namespace task {
 
+  
+
+
+  /** 
+   * Compute the first conditions in the successors of the the input sub-task
+   * The input subtask has to be unique 
+   * @param v : The begining subtask 
+  * @return The list of the first condition nodes that directly follow from the input vertex 
+   */
+  common::List<Subtask *> *  Task::find_first_condition(common::Node<Subtask *> *  v){
+ 
+    common::List<Subtask * > * succs = successors(v);
+    common::List<Subtask * > * to_ret = new common::List<Subtask *>();
+    common::Node <Subtask *> * curr = succs->head;
+
+    for (int i=0;i<succs->size;i++){
+      if (curr->el->_type() == CONDITION){
+  	// Houssam : I need to write this code recrusiblt
+  	to_ret->add_at_tail(new common::Node<Subtask *>(curr,SAVE));
+      } else {
+	to_ret->merge(find_first_condition(curr)); 
+      }
+      curr = curr->next;
+    }    
+    return to_ret;
+  }
+
+
+  
+  /**  Houssam :  I need to write this funtion
+   */
+  // Need tp checl multiple if conditions 
+  common::List<Sema_res *> * Task::construct_if_then_else_sema(common::Node<Subtask *> * v){
+    common::List<Sema_res * > * to_ret = new common::List<Sema_res *> ();
+    if (v!=NULL){
+    printf("calling forr \n");
+    v->display();
+    common::List<Subtask * > * succs = successors(v);
+    printf("this is the successor \n");
+    succs->head->display();
+    if (succs->size==1){
+      printf("here \n");
+      to_ret->add_at_tail(new common::Node<Sema_res *>(new Sema_res(v->el,true)));
+      to_ret->merge(construct_if_then_else_sema(find_first_condition(v)->head));;
+    }
+    }
+    return to_ret; 
+  }
+
+
+
+
+
+
+
+  
   /** 
    * Check's wiether two vertices are linked or not
    * @param v_1 The source subtask 
@@ -1667,6 +1720,8 @@ namespace task {
     for (int i = 0 ; i<_size(); i++){
       if (current->el->_type() == CONDITION)
 	outdata<< current->el->_label()<<" [shape=diamond]"<<std::endl;
+      else if (current->el->_type() == CCONDITION)
+	outdata<< current->el->_label()<<" [shape=diamond style=filled]"<<std::endl;
       else if (current->el->_type()==ALTERNATIVE)
 	outdata<< current->el->_label() <<" [shape=rectangle]"<<std::endl;
       else
@@ -1707,5 +1762,13 @@ namespace task {
     }
     std::cout<<std::endl;
   }
-  
+  Sema_res::Sema_res(Subtask *t, bool left){
+    this->t = t;
+    this->left=left;
+  }
+  Sema_res::~Sema_res(){
+  }
+  void  Sema_res::display(){
+    std::cout<<"["+std::to_string(t->_id())+" "+ std::to_string(left)+"]"<<std::endl;
+  }
 }

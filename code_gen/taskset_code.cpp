@@ -82,8 +82,11 @@ namespace code_generator {
     *fp_h<< "#include <stdio.h>\n";
     *fp_h<< "#include <pthread.h>\n";
     *fp_h<< "#include <semaphore.h>\n";
+    *fp_h<< "#include <stdlib.h>\n";
     *fp_h<< "#include <affinity.h>\n\n";
 
+
+    
     *fp_h<< "#include <time_utils.h> \n";
     
     

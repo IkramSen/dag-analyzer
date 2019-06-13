@@ -20,7 +20,8 @@ clean:
 	rm -rf *.o *.gch $(EXECUTABLE)
 	rm -rf common/*.o
 	rm -rf task/*.o
-	rm -rf platform/*.o
+	rm -rf platform/*.o gen
+
 
 leaks:
 	valgrind --leak-check=yes ./$(EXECUTABLE)

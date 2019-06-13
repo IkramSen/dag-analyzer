@@ -21,6 +21,11 @@
 #define BARUAH_APPROX 1
 #define NON_PREEMP 2
 
+#define EXACT_PREEMP  0
+#define APROX_PREEMP  1
+#define EXACT_NPEEMP  2
+
+
 #define FAIR 0
 #define PROP 1
 
@@ -28,6 +33,9 @@
 #define CPU 2
 #define DLA 3
 #define PVA 4
+#define MEMCPY 5 
+
+
 
 namespace platform{
   class Processor;
@@ -37,6 +45,7 @@ namespace task {
 
   class Buffer;
   class Communication;
+  class Sema_res;
   
   class Task {
 
@@ -65,6 +74,8 @@ namespace task {
 				 common::List<Subtask *> *p,
 				 common::List<common::List<Subtask *> *>  * pp);
   
+
+    common::List<Subtask *> *  find_first_condition(common::Node<Subtask *> *  v);
     
     Task * copy_partial(int id);
     Task * copy_partial();
@@ -186,7 +197,18 @@ namespace task {
     common::List<Buffer *> * filter_by_src(Subtask * src);
     common::List<Buffer *> * filter_by_dst(Subtask * dst);
 
+    common::List<Sema_res *> * construct_if_then_else_sema(common::Node<Subtask *> * v);
     
+  };
+
+  class Sema_res {
+  public: 
+    Subtask * t; // the condition node 
+    bool left; // its value
+
+    Sema_res(Subtask *t, bool left);
+    ~Sema_res();
+    void display(); 
   };
 }
 

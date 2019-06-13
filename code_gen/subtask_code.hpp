@@ -16,7 +16,7 @@
 
 namespace code_generator {
 
-  class Subtask_code {
+  class Subtask_code { 
   private:
     task::Subtask * v;                        /* Sous-tâche courante.           */
     std::string ret_type;                     /* Type de retour de la fonction. */
@@ -51,6 +51,30 @@ namespace code_generator {
     common::List<std::string> * _params();
     std::string _label();
     void display();
+    
+    void generate_header(std::ostream* fp_h, std::ostream* fp_c);
+    void generate_affinity(std::ostream* fp_h, std::ostream* fp_c, int alloc);
+    void generate_wait_sync(std::ostream* fp_h, std::ostream* fp_c,
+			    common::List<task::Subtask *> * preds,
+			    common::List<std::string > * semaphores);
+    void generate_free_sync(std::ostream* fp_h, std::ostream* fp_c,
+			    common::List<task::Subtask *> * succs,
+			    common::List<std::string > * semaphores);
+    void generate_read_buffers(std::ostream* fp_h, std::ostream* fp_c,
+			       common::List<task::Buffer *> * data_read);
+    void generate_write_buffers(std::ostream* fp_h, std::ostream* fp_c,
+				common::List<task::Buffer *> * data_write);
+    std::string generate_condition(std::ostream* fp_h, std::ostream* fp_c,
+				   common::List<task::Subtask *> * succs,
+				   common::List<std::string > * semaphores);
+    void generate_cpu_thread(std::ostream* fp_h, std::ostream* fp_c);
+    void generate_gpu_kernel_call(std::ostream* fp_h, std::ostream* fp_c);
+    void generate_gpu_kernel_code(std::ostream* fp_h, std::ostream* fp_c);
+    void generate_mem_copy(std::ostream* fp_h, std::ostream* fp_c);
+ 
+    void generate_ccondition(std::ostream* fp_h, std::ostream* fp_c,
+			     common::List<task::Subtask *> * preds);
+	
   };
 }
 

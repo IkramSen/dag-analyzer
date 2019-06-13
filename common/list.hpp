@@ -87,7 +87,8 @@ namespace common {
     // Houssam :  to be optimized 
     Node<Data > * get(int idx){
       if(idx>size || idx < 0){
-        return NULL;
+	printf("la? \n");
+	return NULL;
       }
       Node<Data> * obj = head;
       for(int i=0;i<idx;i++){
