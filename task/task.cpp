@@ -460,6 +460,12 @@ namespace task {
    * @return The link has been made
    */
   bool Task::link_two_subtasks(common::Node<Subtask *> *v1, common::Node<Subtask *> *v2){
+    if (!subtasks->contains(v1->el) || !subtasks->contains(v2->el))
+      {
+	std::cerr<<"Unable to link subtasks "+v1->el->_label()+" and "+v2->el->_label()<<std::endl;
+	std::cerr<<"Please check that both are added to the task before linking them "<<std::endl;
+	exit(-1);
+      }
     graph[v1->t_id][v2->t_id]=1;
     return true;
   }
@@ -1034,10 +1040,9 @@ namespace task {
    * @param v The starting subtask node
    * @param p The already existing path (can be empty)
    */
-  
   void Task::generate_single_path(common::Node<Subtask *> *v, common::List<Subtask *> *p){
-    if(v->el->_type() != CONDITION && v->el->_type() != ALTERNATIVE)
-      p->add_at_tail(new common::Node<Subtask *>(v->el));
+    if(v->el->_type() != CCONDITION && v->el->_type() != CONDITION && v->el->_type() != ALTERNATIVE)
+      p->add_at_tail(new common::Node<Subtask *>(v, SAVE));
     common::List<Subtask *> *succs = successors(v);
     if (succs->size == 0){
       common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
@@ -1063,7 +1068,6 @@ namespace task {
     delete succs;
   }
 
-
   // This function generates the paths starting from a  node
   /**
    * Generate the paths starting from a subtask node and an path
@@ -1078,38 +1082,29 @@ namespace task {
    * @param v The starting subtask node
    * @param p The already existing path (can be empty)
    */
-  
   void Task::filter_subtasks_between(common::Node<Subtask *> *v_s,
 				     common::Node<Subtask *> *v_d,
 				     common::List<Subtask *> *p, common::List<common::List<Subtask *> *> * pp){
-    printf("calling back \n");
-    v_s->display(); 
     p->add_at_tail(new common::Node<Subtask *>(v_s->el));
  
     common::List<Subtask *> *succs = successors(v_s);
     if (succs->size == 0 ){
-      printf("arrived at the end \n");
       common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
       if (v_s->el ==v_d->el)
 	{
-	  printf("found than adding \n");
 	  pp->add_at_head(node);
 	}
       delete succs;
       return;
     }
     else {
-      printf("not yet the end \n");
       if (succs->size==1){
-	printf("I have only one succ \n");
 	if (succs->head->el==v_d->el){
-	  printf("it is the right one \n");
 	  common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
 	  pp->add_at_head(node);
 	  delete succs;
 	  return;
 	}else {
-	  printf("not the write one, I continue the generation \n");
 	  filter_subtasks_between(new common::Node<Subtask *>(succs->head, SAVE),v_d,p, pp);
 	   //	  generate_single_path(succs->head,p);
 	  delete succs;
@@ -1117,18 +1112,15 @@ namespace task {
 	}
 	
       } else {
-	printf("I have multiple succ \n");
 	common::Node<Subtask *>* current = succs->head;
 	for (int i=0;i<succs->size;i++){
 	  if (current->el == v_d->el){
-	    printf("I found my destination \n");
 	    common::Node<common::List<Subtask *> *> *node = new common::Node< common::List<Subtask *> *>(p);
 	    pp->add_at_head(node);
 	    delete succs;
 	    return;
 	  }
 	  else {
-	    printf(" destination not found \n");
 	    common::List<Subtask *> *p_= p->copy();
 	    filter_subtasks_between(new common::Node<Subtask *>(current, SAVE),v_d,p_, pp);
 	    current = current->next;
@@ -1139,14 +1131,6 @@ namespace task {
     delete p;
     delete succs;
   }
-
-
-
-
-
-
-
-
   
   /**
    * Generate all the paths for the task.
@@ -1367,30 +1351,42 @@ namespace task {
    * The algorithm :
    *  1. Set all the deadlines to -1
    *  2. Generate and order the paths
-   *  3. For each path compute the slack and if the slack is not < 0 call the assignment method of the given method.
+   *  3. For each path compute the slack and if the slack is not < 0 call the assignment method of the given method
    *
    * @param METHOD the wanted method (PROP or FAIR)
    * @return true if the assignment end well, false otherwise
    */
   bool Task::deadline_single_task(int METHOD){
-    // Houssam: Assign deadline 0 to tasks having a nuull execution time to
-    // Houssam: avoid reducing the performances of the fair method 
+    // Houssam: Assign deadline 0 to tasks having a null execution time to
+    // Houssam: Avoid reducing the performances of the fair method 
     for (int i=0;i<subtasks->size;i++){
+      // Houssam : Optimize this one(list->get(int)), get(i) keeps the current index
+      // Houssam : and continues onward (possible acces to i+1) in next
+      // Houssam : iterations
       common::Node<Subtask *> *curr_subtask = subtasks->get(i);
       if (curr_subtask->el->_C() == 0)
-	curr_subtask->D=0;
+	{
+	  curr_subtask->D=0;
+	  printf("what the fuck are you doing \n");
+	  curr_subtask->display();
+	}
     }
     generate_paths();
     order_paths();
     for (int i=0;i< paths->size; i++){
       common::List<Subtask *> *curr_path = paths->get(i)->el;
       int sl= compute_slack(_D(), curr_path);
+      printf("********************************************** \n");
+      curr_path->display();
+      printf("sl %d",sl);
+      printf("********************************************** \n");
       if (sl < 0)
 	{
 	  std::cerr << "The slack is negative, deadlines are not assigned " << '\n';
 	  return false;
 	}
-	
+      
+
       switch (METHOD) {
       case PROP:
 	prop_assignment(curr_path,sl);
@@ -1399,7 +1395,7 @@ namespace task {
 	fair_assignment(curr_path,sl);
 	break;
       default:
-	std::cerr << "Undefined assignement method" << '\n';
+	std::cerr << "Undefined assignement method" << std::endl;
 	return false;
       }
     }

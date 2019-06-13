@@ -16,7 +16,12 @@ namespace task {
     this->type=type;
     this->TAG=tag;
     this->label = "v"+ std::to_string(id) ;
-  }
+
+    if (type==CONDITION || type == CCONDITION || type == ALTERNATIVE){
+      this->C = 0;
+      this->PC = 0;
+    }
+ }
 
 
   Subtask * Subtask::_silent_subtask(){

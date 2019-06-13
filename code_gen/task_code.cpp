@@ -168,23 +168,13 @@ namespace code_generator {
       c->generate_source(data_write, data_read,preds,succs,semaphores, fp_h, fp_c,alloc);
       curr_ = curr_->next;
     }
-
-
-    
-
-    
-    
-
     *fp_c << "void *"+ task->_label()+"(void * arg){";
     *fp_h << "void *"+ task->_label()+"(void * arg); \n";
-
     common::Node <task::Communication *> * curr_comm = task->_comms()->head;
     common::List <task::Buffer *> * processed_buffers = new common::List <task::Buffer *> () ;
-    
     for (int i=0;i<task->_comms()->size;i++){
       if (!processed_buffers->contains(curr_comm->el->_buff()))
 	{
-	  
 	  processed_buffers->add_at_tail(new common::Node<task::Buffer *>(curr_comm->el->_buff()));
 	  *fp_h << curr_comm->el->_buff()->_type()+" "+curr_comm->el->_buff()->_name();
 	  if (curr_comm->el->_buff()->_size()>1)
@@ -208,8 +198,6 @@ namespace code_generator {
       curr_sema= curr_sema->next;
     }
 
-
-
     *fp_c<<"  \n";
 
     // initializing the mutex to protect shared buffers 
@@ -218,9 +206,6 @@ namespace code_generator {
       *fp_c<<"  pthread_mutex_init(&"+curr_buff->el->_mutex_name()+", NULL); \n";
       curr_buff= curr_buff->next;
     }
-
-    
-    
 
     *fp_h <<"\n";
     // creating the threads of subtasks 
@@ -269,28 +254,4 @@ namespace code_generator {
   }
 
 
-  // void check_sema(task::Subtask * src, task::Subtask *dst, common::List<task::Subtask *> *l_1, common::List<boolean> *l_2 ){
-
-  //   task::Task * l = generate_task_between(src,dst);
-  //   task::Subtask *s = get_first_condition_starting from_src(l);
-  //   if (s!=NULL) {
-  //     common::List<Subtask *>  * succ_1 = get_successors_of(successors(s)[0]);
-  //     common::List<Subtask *>  * succ_2 = get_successors_of(successors(s)[1]);
-
-  //     if (succ_1->contains(dst) && succ_2->contains(dst))
-  // 	return ;
-
-  //     if (succ_1->contains(dst))
-  // 	{
-  // 	  l_1->add_at_tail(s);
-  // 	  l_2->add_at_tail(true);
-  // 	  check_sema(succ_1,dst,l_1,l_2);
-  // 	}
-  //     else {
-  // 	l_1->add_at_tail(s);
-  // 	l_2->add_at_tail(false);
-  // 	check_sema(succ_2,dst,l_1,l_2);
-  //     }
-  //   }
-  // }
 }

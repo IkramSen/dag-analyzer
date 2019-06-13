@@ -71,10 +71,8 @@ namespace code_generator {
     void generate_gpu_kernel_call(std::ostream* fp_h, std::ostream* fp_c);
     void generate_gpu_kernel_code(std::ostream* fp_h, std::ostream* fp_c);
     void generate_mem_copy(std::ostream* fp_h, std::ostream* fp_c);
- 
     void generate_ccondition(std::ostream* fp_h, std::ostream* fp_c,
-			     common::List<task::Subtask *> * preds);
-	
+			     common::List<task::Subtask *> * preds);	
   };
 }
 

@@ -6,7 +6,6 @@ namespace code_generator {
   /** 
    * Constructor  
    */
-
   Taskset_code::Taskset_code() {
   }
 
@@ -19,7 +18,6 @@ namespace code_generator {
    * generates  the task set source code in CONSOLE MODE  
    *@param taskset The task set to generate code  
    */
-  
   void  Taskset_code::generate_source(task::Taskset *taskset){
 #ifdef DEBUG
     std::cout<<"Calling task set generation in CONSOLE Mode"<<std::endl;
@@ -45,20 +43,13 @@ namespace code_generator {
    *@param PRINT_MODE Source code generation Output: CONSOLE or TOFILE 
    *@param f_p The path to the output file if TOFILE mode is selected 
    */
-  
   void  Taskset_code::print_taskset(task::Taskset *taskset, int PRINT_MODE, std::string f_p) {
-
-    
     std::string _h = f_p+"inc/tasks.h";
     std::string _c = f_p+"src/tasks.c";
     std::string _m = f_p+"src/main.c";
-
-
-    
     std::ostream* fp_h;
     std::ostream* fp_c;
     std::ostream* mp_c;
-    
     if (PRINT_MODE == TOFILE) 
       {
 	fp_h= new std::ofstream(_h);

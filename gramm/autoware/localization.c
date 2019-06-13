@@ -47,7 +47,12 @@ computePointGradients={
 
 
 Node computeHessian_gpu (C=0, TAG=GPU,tra="lll");
-Node computeHessian_cpu5 (C=0, TAG=GPU,tra="lll");
+
+Node computeHessian_cpu5(C=0, TAG=GPU,tra="lll");
+
+Node cc(C=0, TAG=GPU,tra="lll");
+Node aa(C=0, TAG=GPU,tra="lll");
+Node bb(C=0, TAG=GPU,tra="lll");
 sGraph computeHessian;
 computeHessian={
   alta(computeHessian_gpu,computeHessian_cpu5);
@@ -77,12 +82,12 @@ Node cpu_sync_CD_5(C=0, TAG=CPU,tra="lll");
 Node cpu_sync_CD_6(C=0, TAG=CPU,tra="lll");
 Node cpu_sync_CD_7(C=0, TAG=CPU,tra="lll");
 Node cpu_sync_CD_8(C=0, TAG=CPU,tra="lll");
-Node cpu_sync_CD_9(C=0, TAG=CPU,tra="lll");
-
+Node exit_2(C=0, TAG=CPU,tra="lll");
+Node exit_1(C=0, TAG=CPU,tra="lll");
 
 Node cpu_sync_CT_1(C=0, TAG=CPU,tra="lll");
 
-Condition hessian_2, hessian_3;
+Condition hessian_2, hessian_3, cond;
 
 sGraph computeHessian_2;
 copy(computeHessian_2,computeHessian);
@@ -91,6 +96,10 @@ sGraph computeDerivative;
 
 computeDerivative={
   cpu_sync_CD_0;
+  if (cond) {
+  exit_1;
+  }
+  else{
   computePointGradients;
   if (hessian_2){
     computeHessian;
@@ -99,80 +108,12 @@ computeDerivative={
     
   }
   cpu_sync_CD_1;
-  computeExCovX_gpu;
-  cpu_sync_CD_2;
-  computeScoreList_gpu;
-  cpu_sync_CD_3;
-  computeCovDxdPi_gpu;
-  cpu_sync_CD_4;
-  computeScoreGradientList_gpu; 
-  cpu_sync_CD_5;												
-  if (hessian_3) {
-    cpu_sync_CD_6;
-    computeHessianListS0_gpu;
+  exit_2;
   }
-  cpu_sync_CD_7;
-  matrixSum_gpu;
-  cpu_sync_CD_8;
-  sumScore_gpu;
-  cpu_sync_CD_9;
 };
 
 
 
 
-copy(computeDerivative_1,computeDerivative);
-copy(computeDerivative_2,computeDerivative);
 
-
-
-
-
-
-Node   cpu_sync_CST_0 (C=0, TAG=CPU,tra="lll");
-Node   cpu_sync_CST_1 (C=0, TAG=CPU,tra="lll");
-Node   cpu_sync_CST_2 (C=0, TAG=CPU,tra="lll");
-Node   cpu_sync_CST_3 (C=0, TAG=CPU,tra="lll");
-Node   cpu_sync_CST_4 (C=0, TAG=CPU,tra="lll");
-
-Node   transformPointCloud_gpu_3(C=0, TAG=CPU,tra="lll");
-Node   transformPointCloud_gpu_4(C=0, TAG=CPU,tra="lll");
-Condition step_iterations;
-
-sGraph computeStepMT_L;
-computeStepMT_L={
-  cpu_sync_CST_0;
-  transformPointCloud_gpu_3;
-  cpu_sync_CST_1;
-  computeDerivative_1; 
-  cpu_sync_CST_2;
-  transformPointCloud_gpu_4; 
-  cpu_sync_CST_3;
-  computeDerivative_2;
-  if (step_iterations) {
-    alta(computeHessian_gpu,computeHessian_cpu5);
-  }
-  cpu_sync_CST_4;
-};
-
-Node cpu_sync_CT_0 (C=0, TAG=CPU,tra="lll");
-Node cpu_sync_CT_1 (C=0, TAG=CPU,tra="lll");
-Node cpu_sync_CT_2 (C=0, TAG=CPU,tra="lll");
-
-sGraph computeDerivative_3;
-copy(computeDerivative_3,computeDerivative);
-
-Condition guessCondition;
-computeTransformation={
-  cpu_sync_CT_0; 
-  if (guessCondition){
-    transformPointCloud_gpu_5; 
-  }
-
-  cpu_sync_CT_1;
-  computeDerivative_3;
-  computeStepMT_L;  
-  cpu_sync_CT_2;
-};
-
-generate(computeTransformation,"/tmp/ll.dot");
+generate(computeDerivative,"/tmp/ll.dot");
