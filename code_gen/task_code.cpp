@@ -4,12 +4,11 @@ namespace code_generator {
 
   int nb_end_node = 0;
 
-  // Houssam : Need to generate also subtasks for GPU kernels 
+
   /**
    * The Task_code class constructor.
    * @param label The task function label.
    */
-
   Task_code::Task_code(task::Task *tau) {
     preds        = new common::List<Subtask_code *> ();
     succs        = new common::List<Subtask_code *> ();
@@ -26,20 +25,22 @@ namespace code_generator {
     this->task = tau;
   }
 
+  /** 
+   * Getter of semaphores 
+   */ 
   common::List<std::string> * Task_code:: _semaphores(){
     return semaphores;
   }
+  
   /**
    * The Task_code class destructor.
    */
-
   Task_code::~Task_code() { }
 
   /**
    * The predecessors list getter.
    * @return The predecessors list.
    */
-
   common::List<Subtask_code *> * Task_code::_preds() {
     return preds;
   }
@@ -48,7 +49,6 @@ namespace code_generator {
    * The successors list getter.
    * @return The successors list.
    */
-
   common::List<Subtask_code *> * Task_code::_succs() {
     return succs;
   }
@@ -66,7 +66,6 @@ namespace code_generator {
    * The openings list getter.
    * @return the openings list.
    */
-
   common::List<std::string> * Task_code::_openings() {
     return openings;
   }
@@ -75,7 +74,6 @@ namespace code_generator {
    * The closings list getter.
    * @return the closings list.
    */
-
   common::List<std::string> * Task_code::_closings() {
     return closings;
   }
@@ -84,7 +82,6 @@ namespace code_generator {
    * The params list getter.
    * @return the params list.
    */
-
   common::List<std::string> * Task_code::_params() {
     return params;
   }
@@ -102,7 +99,6 @@ namespace code_generator {
    * The output semaphore list getter.
    * @return The output semaphore list.
    */
-
   common::List<std::string> * Task_code::_output_semas() {
     return output_semas;
   }
@@ -111,7 +107,6 @@ namespace code_generator {
    * The list code getter.
    * @return The list code.
    */
-
   common::List<Subtask_code * > * Task_code::_list_code() {
     return list_code;
   }
@@ -138,29 +133,47 @@ namespace code_generator {
 
    */
   void Task_code::generate_source(std::ostream* fp_h, std::ostream* fp_c) {
-    // Houssam: n'oublies pas de faire les tests avec des t\^aches complexes.
-    // Houssam: n'oublies pas de faire les noeuds conditionnelles 
+    *fp_h << "\n";
 
-
-      *fp_h << "\n";
-
-    // generating source subtasks code 
+    // generating source subtasks code
+    common::List<task::Subtask *> * cconds = new common::List<task::Subtask *> ();
+      
     common::Node <task::Subtask *> * curr_ = this->task->_subtasks()->head;
     for (int i=0;i<this->task->_subtasks()->size;i++){
+      if (curr_->el->_type()!=CCONDITION){
       common::List<task::Subtask *> * preds = task->predecessors(curr_);
       common::List<task::Subtask *> * succs = task->successors(curr_);
       Subtask_code *c = new Subtask_code(curr_->el);
-
-
       common::List<task::Buffer *> * data_read  = task->filter_by_src(curr_->el);
       common::List<task::Buffer *> * data_write  = task->filter_by_dst(curr_->el);
-
-
       // Houssam : Need to calculate the subtask allocation processor here 
       int alloc = 1;      
-      c->generate_source(data_write, data_read,preds,succs,semaphores, fp_h, fp_c,alloc); 
+      c->generate_source(data_write, data_read,preds,succs,semaphores, fp_h, fp_c,alloc);
+      }
+      else
+	cconds->add_at_tail(new common::Node<task::Subtask *>(curr_,SAVE));
       curr_ = curr_->next;
     }
+    
+    //generating the subtasks code for Closing conditions 
+    curr_ = cconds->head;
+    for (int i=0;i<cconds->size;i++){
+      common::List<task::Subtask *> * preds = task->predecessors(curr_);
+      common::List<task::Subtask *> * succs = task->successors(curr_);
+      Subtask_code *c = new Subtask_code(curr_->el);
+      common::List<task::Buffer *> * data_read  = task->filter_by_src(curr_->el);
+      common::List<task::Buffer *> * data_write  = task->filter_by_dst(curr_->el);
+      // Houssam : Need to calculate the subtask allocation processor here 
+      int alloc = 1;      
+      c->generate_source(data_write, data_read,preds,succs,semaphores, fp_h, fp_c,alloc);
+      curr_ = curr_->next;
+    }
+
+
+    
+
+    
+    
 
     *fp_c << "void *"+ task->_label()+"(void * arg){";
     *fp_h << "void *"+ task->_label()+"(void * arg); \n";

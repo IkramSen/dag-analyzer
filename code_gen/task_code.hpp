@@ -40,11 +40,7 @@ namespace code_generator {
     void process_task();
   };
 
-  // class sema_res {
-  // public: 
-  //   Subtask * t; // the condition node 
-  //   boolean left; // its value 
-  // }
+
 }
 
 #endif
