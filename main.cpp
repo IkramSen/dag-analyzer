@@ -44,6 +44,11 @@ int main(int argc, char ** argv){
   tau->to_dot("/tmp/tt.dot");
 
 
-  
-  
+  tau->generate_all_conc_tag_el(ALTERNATIVE);
+
+  task::Taskset *ts = new task::Taskset(-1);
+
+  for (int t=0;t<200;t++){
+    tau->_concretes()->get(0)->dbf_exact(t,ts); 
+  }
 }

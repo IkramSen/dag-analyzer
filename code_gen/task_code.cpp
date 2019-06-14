@@ -118,12 +118,9 @@ namespace code_generator {
    * @return The associated subtask code, if not found, it returns NULL
    */
   Subtask_code * Task_code::find_subtask_code_subtask(task::Subtask  *v) {
-    common::Node<code_generator::Subtask_code * > * curr = this->_list_code()->head;
-    for (int i = 0; i < this->_list_code()->size; i++) {
-      if (curr->el->_subtask() == v)
-        return curr->el;
-      curr = curr->next;
-    }
+    for (int i = 0; i < this->_list_code()->size; i++) 
+      if (_list_code()->get(i)->_subtask() == v)
+        return _list_code()->get(i);
     return NULL;
   }
 
@@ -138,8 +135,9 @@ namespace code_generator {
     // generating source subtasks code
     common::List<task::Subtask *> * cconds = new common::List<task::Subtask *> ();
       
-    common::Node <task::Subtask *> * curr_ = this->task->_subtasks()->head;
+   
     for (int i=0;i<this->task->_subtasks()->size;i++){
+      common::Node <task::Subtask *> * curr_ = this->task->_subtasks()->_get(i);
       if (curr_->el->_type()!=CCONDITION){
       common::List<task::Subtask *> * preds = task->predecessors(curr_);
       common::List<task::Subtask *> * succs = task->successors(curr_);
@@ -152,12 +150,12 @@ namespace code_generator {
       }
       else
 	cconds->add_at_tail(new common::Node<task::Subtask *>(curr_,SAVE));
-      curr_ = curr_->next;
     }
     
     //generating the subtasks code for Closing conditions 
-    curr_ = cconds->head;
+  
     for (int i=0;i<cconds->size;i++){
+      common::Node<task::Subtask *> * curr_ = cconds->_get(i);
       common::List<task::Subtask *> * preds = task->predecessors(curr_);
       common::List<task::Subtask *> * succs = task->successors(curr_);
       Subtask_code *c = new Subtask_code(curr_->el);
@@ -166,24 +164,24 @@ namespace code_generator {
       // Houssam : Need to calculate the subtask allocation processor here 
       int alloc = 1;      
       c->generate_source(data_write, data_read,preds,succs,semaphores, fp_h, fp_c,alloc);
-      curr_ = curr_->next;
     }
+    
     *fp_c << "void *"+ task->_label()+"(void * arg){";
     *fp_h << "void *"+ task->_label()+"(void * arg); \n";
-    common::Node <task::Communication *> * curr_comm = task->_comms()->head;
+  
     common::List <task::Buffer *> * processed_buffers = new common::List <task::Buffer *> () ;
     for (int i=0;i<task->_comms()->size;i++){
-      if (!processed_buffers->contains(curr_comm->el->_buff()))
+      task::Communication * curr_comm = task->_comms()->get(i);
+      if (!processed_buffers->contains(curr_comm->_buff()))
 	{
-	  processed_buffers->add_at_tail(new common::Node<task::Buffer *>(curr_comm->el->_buff()));
-	  *fp_h << curr_comm->el->_buff()->_type()+" "+curr_comm->el->_buff()->_name();
-	  if (curr_comm->el->_buff()->_size()>1)
-	    *fp_h << "["+std::to_string(curr_comm->el->_buff()->_size())+"]";
+	  processed_buffers->add_at_tail(new common::Node<task::Buffer *>(curr_comm->_buff()));
+	  *fp_h << curr_comm->_buff()->_type()+" "+curr_comm->_buff()->_name();
+	  if (curr_comm->_buff()->_size()>1)
+	    *fp_h << "["+std::to_string(curr_comm->_buff()->_size())+"]";
 	  *fp_h << ";\n";
 	  
-	  *fp_h << "pthread_mutex_t  "+ curr_comm->el->_buff()->_mutex_name()+" ; \n"; 
-	}
-      curr_comm = curr_comm->next;
+	  *fp_h << "pthread_mutex_t  "+ curr_comm->_buff()->_mutex_name()+" ; \n"; 
+	}    
     }
 
     
@@ -191,31 +189,28 @@ namespace code_generator {
     *fp_c << " \n  struct periodic_data_struct *ps = (struct periodic_data_struct *) arg;\n";
     
     *fp_h << "\n\n // declaring semaphores \n"; 
-    common::Node<std::string> * curr_sema = semaphores->head;
+    
     for (int i=0;i<semaphores->size;i++){
-      *fp_h<<"sem_t "+curr_sema->el+";\n";
-      *fp_c<<"  sem_init(&"+curr_sema->el+", 0, 0); \n";
-      curr_sema= curr_sema->next;
+      std::string curr_sema = semaphores->get(i);
+      *fp_h<<"sem_t "+curr_sema+";\n";
+      *fp_c<<"  sem_init(&"+curr_sema+", 0, 0); \n";
     }
 
     *fp_c<<"  \n";
 
     // initializing the mutex to protect shared buffers 
-    common::Node<task::Buffer *> * curr_buff = processed_buffers->head;
-    for (int i=0;i<processed_buffers->size;i++){
-      *fp_c<<"  pthread_mutex_init(&"+curr_buff->el->_mutex_name()+", NULL); \n";
-      curr_buff= curr_buff->next;
-    }
+    for (int i=0;i<processed_buffers->size;i++)
+      *fp_c<<"  pthread_mutex_init(&"+processed_buffers->get(i)->_mutex_name()+", NULL); \n";
 
     *fp_h <<"\n";
     // creating the threads of subtasks 
     *fp_c << "\n\n // creating threads of tasks \n"; 
-    curr_ = this->task->_subtasks()->head;
+
     for (int i=0;i<this->task->_subtasks()->size;i++){
-      std::string tid = curr_->el->_label()+"_tid";
+      task::Subtask * curr_ = this->task->_subtasks()->get(i);
+      std::string tid = curr_->_label()+"_tid";
       *fp_h << "pthread_t "+tid+";\n";
-      *fp_c << "  pthread_create(&"+tid+", NULL, " + curr_->el->_label() + ",  NULL);\n";
-      curr_ = curr_->next;
+      *fp_c << "  pthread_create(&"+tid+", NULL, " + curr_->_label() + ",  NULL);\n";
     }
 
 
@@ -231,20 +226,15 @@ namespace code_generator {
     // synchronization for source nodes
     common::List<task::Subtask *> * entries = this->task->list_entries();
     common::List<task::Subtask *> * exits = this->task->list_exits();
-    curr_ = entries->head;
     *fp_c<<"\n    // signaling the  source threads to start \n";
-    for(int i = 0; i < entries->size; i++) {
-      *fp_c << + "    sem_post(&ent_"+curr_->el->_label()+"_sem);   \n";
-      curr_ = curr_->next;
-    }
+    for(int i = 0; i < entries->size; i++) 
+      *fp_c << + "    sem_post(&ent_"+entries->get(i)->_label()+"_sem);   \n";
+
     // Synchronization for sinks
     *fp_c<<"\n    // Waiting for all threads to complete \n";
-    curr_ = exits->head;
-    for(int i = 0; i < exits->size; i++) {
-      *fp_c << "    sem_wait(&ext_"+curr_->el->_label()+"_sem);   \n";
-      curr_ = curr_->next;
-    }
     
+    for(int i = 0; i < exits->size; i++) 
+      *fp_c << "    sem_wait(&ext_"+exits->get(i)->_label()+"_sem);   \n";
     // Make the task sleeping until the next period 
     *fp_c << "\n    timespec_add_us(&next, ps->period_us);\n";
     *fp_c << "    clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next, NULL);\n";

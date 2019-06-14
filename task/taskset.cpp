@@ -27,6 +27,62 @@ namespace task{
     this->list = list;
   }
 
+  /** 
+   * Adds a task to the current taskset 
+   * @param tau The task to add
+   */
+  void Taskset:: add(Task * tau){
+    list->add_at_tail(new common::Node<Task *> (tau));
+  }
+
+
+  /** 
+   * removes a task to the current taskset 
+   * @param tau The task to remove
+   */
+  bool  Taskset::remove(Task * tau){
+    return list->remove(tau); 
+  }
+
+
+
+    /** 
+   * removes a task to the current taskset 
+   * @param tau The task to remove
+   */
+  void Taskset::merge(Taskset *ts){
+    list->merge(ts->_list()); 
+  }
+
+
+  
+    /**
+   * Calculate the preemption cost for all subtasks having a deadline
+   * shorter than d if allocated with the current tasks set
+   *
+   * @attention The taskset passed here should not contain the current one
+   * @param D the subtask deadline
+   * @param g_s the Tasks list
+   * @return The premption cost
+   */
+  int Taskset::preemption_cost_shorter_deadlines(int D){
+    int max = 0;
+    for (int i=0;i<_size();i++){
+      Task * curr_tau = list->get(i);      
+      for (int j=0;j<curr_tau->_subtasks()->size;j++){
+	common::Node<Subtask *> * curr_subtask = curr_tau->_subtasks()->_get(j);
+	if (!curr_subtask->empty && curr_subtask->D > D)
+	  max=std::max(max, curr_subtask->el->_PC());
+      }
+    }
+    return max;
+  }
+
+
+  Task * Taskset::get(int i){
+    return list->get(i);
+  }
+  
   /**
    * Constructor of the task
    * @param id the ID of the task set
@@ -54,8 +110,6 @@ namespace task{
   Taskset::~Taskset(){
   }
 
-
-
   /**
    * Calculate the Least common multiple (LCM) of the 2 given numbers
    * @param a First number
@@ -81,30 +135,23 @@ namespace task{
    */
   int Taskset::hyperperiod(){
     int hyper = 1;
-    common::Node<Task *> *  curr = list->head;
-    for (int i=0; i< list->size ; i++){
-      hyper = LCM(hyper,curr->el->_T());
-      curr = curr -> next;
-    }
+    for (int i=0; i< list->size ; i++)
+      hyper = LCM(hyper,list->get(i)->_T());
     return hyper;
-
   }
+  
   /**
    * Read the task set from  file arg  
    * @param arg : the path to the file
    */
-   
   void Taskset::read(char *arg){
-
   }
 
   /**
    * Write  the task set to the file  arg 
    * @param arg : the path to the file
    */
-
   void Taskset::write(char *arg){
-
   }
 
   /**
@@ -132,7 +179,7 @@ namespace task{
 	std::cout<<"UNKNOW OPTION.. EXITTING"<<std::endl;
 	exit(-1);
       }
-      common::Node<Task *> * curr = list->head;
+    
 
       for (int j=0;j<list->size;j++){
 	double  ex_t;
@@ -149,9 +196,8 @@ namespace task{
 	}
 	if ( ex_t> max_c){
 	  max_c  = ex_t;
-	  max_tau = curr->el;
+	  max_tau = list->get(j);
 	}
-	curr = curr->next;
       }
       list->remove(max_tau);
       l_t->add_at_tail(new common::Node<Task *  >(max_tau));
@@ -165,11 +211,8 @@ namespace task{
    */
   double Taskset::utilization(){
     double U = 0;
-    common::Node<Task *> *  curr = list->head;
-    for (int i=0; i< list->size ; i++){
-      U +=  curr->el->utilization();
-      curr = curr -> next;
-    }
+    for (int i=0; i< list->size ; i++)
+      U +=  list->get(i)->utilization();
     return U;
   }
 
@@ -177,11 +220,8 @@ namespace task{
    * Print task set 
    */
   void Taskset::display(){
-    common::Node<Task *> *  curr = list->head;
-    for (int i=0; i< list->size ; i++){
-      curr->display();
-      curr = curr -> next;
-    }
+    for (int i=0; i< list->size ; i++)
+      list->_get(i)->display();
   }
 
   /**
@@ -191,9 +231,8 @@ namespace task{
   Taskset* Taskset::copy(){
     Taskset *copy = new Taskset(this->id);
     common::List<Task *> *copylist = new common::List<Task *>();
-    for (int i = 0; i < this->list->size; i++) {
-      copylist->add_at_tail(new common::Node<Task *>(this->list->get(i)->el->copy()));
-    }
+    for (int i = 0; i < this->list->size; i++) 
+      copylist->add(this->list->get(i)->copy());
     return copy;
   }
 }

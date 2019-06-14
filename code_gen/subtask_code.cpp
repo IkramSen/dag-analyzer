@@ -163,14 +163,14 @@ namespace code_generator {
 	semaphores->add_at_tail(new common::Node<std::string>(sema_name));
       }
     else {
-      common::Node<task::Subtask *> * curr_ = preds->head;
+
       for (int j = 0; j < preds->size; j++){
-	std::string sema_name = curr_->el->_label()+"_"+this->v->_label()+"_sem";
+	std::string sema_name = preds->get(j)->_label()+"_"+this->v->_label()+"_sem";
 	*fp_c << "    sem_wait(&" +sema_name+");\n";
 	if (!semaphores->contains_string(sema_name)){
 	  semaphores->add_at_tail(new common::Node<std::string>(sema_name));
 	}
-	curr_=curr_->next;
+
       }
     }
   }
@@ -190,14 +190,13 @@ namespace code_generator {
 	*fp_c << "    sem_post(&"+sema_name+");\n";
 	semaphores->add_at_tail(new common::Node<std::string>(sema_name));
       } else {
-	common::Node<task::Subtask *> * curr_ = succs->head;
 	for(int i = 0; i < succs->size; i++) {
-	  std::string sema_name = this->v->_label()+"_"+curr_->el->_label()+"_sem"; 
+	  std::string sema_name = this->v->_label()+"_"+succs->get(i)->_label()+"_sem"; 
 	  *fp_c << "    sem_post(&"+sema_name+");\n";
 	  if (!semaphores->contains_string(sema_name)){
 	    semaphores->add_at_tail(new common::Node<std::string>(sema_name));
 	  }
-	  curr_ = curr_->next;
+
 	}
       }
   }
@@ -211,22 +210,22 @@ namespace code_generator {
    */
   void Subtask_code::generate_read_buffers(std::ostream* fp_h, std::ostream* fp_c,
 					   common::List<task::Buffer *> * data_read){
-    common::Node<task::Buffer * > * curr_buff = data_read->head;
+   
     for (int i=0;i<data_read->size;i++){
+      task::Buffer * curr_buff = data_read->get(i);
       if (PROTECT_READ==PROTECT){
-	*fp_c<<"    pthread_mutex_lock(&"+ curr_buff->el->_mutex_name() +"); \n";
+	*fp_c<<"    pthread_mutex_lock(&"+ curr_buff->_mutex_name() +"); \n";
 	*fp_c<<"    move_data(";
-	if (curr_buff->el->_size()==1)
+	if (curr_buff->_size()==1)
 	  *fp_c<<"&";
 
-	*fp_c<<curr_buff->el->_name()+", sizeof("+curr_buff->el->_type()+")*"+std::to_string(curr_buff->el->_size())+");  /* read operation */ \n";
-	*fp_c<<"    pthread_mutex_unlock(&"+ curr_buff->el->_mutex_name() +"); \n";
+	*fp_c<<curr_buff->_name()+", sizeof("+curr_buff->_type()+")*"+std::to_string(curr_buff->_size())+");  /* read operation */ \n";
+	*fp_c<<"    pthread_mutex_unlock(&"+ curr_buff->_mutex_name() +"); \n";
       }
       else {
 	*fp_c<<"    //read operation \n";
 	*fp_c<<"    move_data(curr_buff->name), curr_buff->size)\n;";
       }
-      curr_buff = curr_buff->next;
     }
   }
 
@@ -238,21 +237,22 @@ namespace code_generator {
    */
   void Subtask_code::generate_write_buffers(std::ostream* fp_h, std::ostream* fp_c,
 					    common::List<task::Buffer *> * data_write){
-    common::Node<task::Buffer * > * curr_buff = data_write->head;
+    
     for (int i=0;i<data_write->size;i++){
+      task::Buffer * curr_buff = data_write->get(i);
       if (PROTECT_WRITE==PROTECT){
-	*fp_c<<"    pthread_mutex_lock(&"+ curr_buff->el->_mutex_name() +"); \n";
+	*fp_c<<"    pthread_mutex_lock(&"+ curr_buff->_mutex_name() +"); \n";
 	*fp_c<<"    move_data(";
-	if (curr_buff->el->_size()==1)
+	if (curr_buff->_size()==1)
 	  *fp_c<<"&";
-	*fp_c<<curr_buff->el->_name()+", sizeof("+curr_buff->el->_type()+")*"+std::to_string(curr_buff->el->_size())+");  /* read operation */ \n";
-	*fp_c<<"    pthread_mutex_unlock(&"+ curr_buff->el->_mutex_name() +"); \n";
+	*fp_c<<curr_buff->_name()+", sizeof("+curr_buff->_type()+")*"+std::to_string(curr_buff->_size())+");  /* read operation */ \n";
+	*fp_c<<"    pthread_mutex_unlock(&"+ curr_buff->_mutex_name() +"); \n";
       }
       else {
 	*fp_c<<"    //write opertion \n";
 	*fp_c<<"    move_data(curr_buff->name), curr_buff->size)\n;";
       }
-      curr_buff = curr_buff->next;
+     
     }
   }
 
@@ -275,14 +275,14 @@ namespace code_generator {
     std::string to_ret = "int "+condition_name+"=10;\n";
     *fp_c <<"    "<< condition_name+"=random_between(-10,10);\n";
     *fp_c << "\n \n    if ("+condition_name+">0) { \n";
-    std::string sema_name = this->v->_label()+"_"+succs->get(0)->el->_label()+"_sem";
+    std::string sema_name = this->v->_label()+"_"+succs->get(0)->_label()+"_sem";
     v->_sema_left(sema_name);
     *fp_c << "      sem_post(&"+sema_name+");\n  }\n";
     if (!semaphores->contains_string(sema_name)){
       semaphores->add_at_tail(new common::Node<std::string>(sema_name));
     }
     *fp_c<< "    else{ \n";
-    sema_name = this->v->_label()+"_"+succs->get(1)->el->_label()+"_sem";
+    sema_name = this->v->_label()+"_"+succs->get(1)->_label()+"_sem";
     v->_sema_right(sema_name);
     *fp_c << "      sem_post(&"+sema_name+");\n  }\n";
     std::string c_sema_name = v->_label()+"_closing_sem";
@@ -355,9 +355,9 @@ namespace code_generator {
     
     std::string condition_name = v->_silent_subtask()->_label()+"_c";
     *fp_c << "  if ("+condition_name+">0)\n";
-    *fp_c << "    sem_wait(&"+preds->head->el->_label()+"_"+v->_label()+"_sem);\n";
+    *fp_c << "    sem_wait(&"+preds->get(0)->_label()+"_"+v->_label()+"_sem);\n";
     *fp_c<<  "  else {\n";
-    *fp_c << "    sem_wait(&"+preds->head->next->el->_label()+"_"+v->_label()+"_sem); \n  } \n";
+    *fp_c << "    sem_wait(&"+preds->get(1)->_label()+"_"+v->_label()+"_sem); \n  } \n";
     
 
   }

@@ -22,11 +22,16 @@ namespace task {
     int hyperperiod();
     void read(char *);
     void write(char *);
-    void sort(int );
+    void sort(int);
+    void add(Task * tau);
     double utilization();
     int LCM(int , int );
     void display();
     Taskset* copy();
+    bool remove(Task * tau);
+    void merge(Taskset *ts);
+    int preemption_cost_shorter_deadlines(int D);
+    Task * get(int i); 
   };
 }
 #endif

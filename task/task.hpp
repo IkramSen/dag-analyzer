@@ -46,6 +46,7 @@ namespace task {
   class Buffer;
   class Communication;
   class Sema_res;
+  class Taskset;
   
   class Task {
 
@@ -59,9 +60,9 @@ namespace task {
     std::string label;
 
     common::List<Subtask *> *subtasks;
-    common::List<Task *> * concretes;
-    common::List<Task *> * elems;
-    common::List<Task *> * taggeds;
+    Taskset * concretes;
+    Taskset * elems;
+    Taskset * taggeds;
     common::List<Communication *> * comms;
     common::List<common::List<Subtask *> *> *paths;
 
@@ -95,14 +96,14 @@ namespace task {
     std::string _label();
     void  _label(std::string);
     
-    common::List<Task *> * _concretes();
-    void _concretes(common::List<Task *> *conc);
+    Taskset * _concretes();
+    void _concretes(Taskset *conc);
 
-    common::List<Task *> * _elems();
-    void _elems(common::List<Task *> * elem);
+    Taskset * _elems();
+    void _elems(Taskset * elem);
 
-    common::List<Task *> * _taggeds();
-    void _taggeds(common::List<Task *> * taggeds);
+    Taskset * _taggeds();
+    void _taggeds(Taskset * taggeds);
 
     Task *get_tagged_task(int TAG);
 
@@ -134,10 +135,10 @@ namespace task {
     common::List<Subtask *> * list_exits();
     bool has_predecessors(common::Node<Subtask *> *v);
     bool has_successors(common::Node<Subtask *> *v);
-    Task * find_task_by_subtask(Subtask *e, common::List<Task *> * ts);
+    Task * find_task_by_subtask(Subtask *e, Taskset * ts);
 
     // Concrete, tagged and elementary generations functions
-    common::List<Task *> * generate_one(common::Node<Subtask *> *c);
+    Taskset * generate_one(common::Node<Subtask *> *c);
     void generate_all_conc_tag_el(int type);
     common::List<Subtask *> * children(common::Node<Subtask *> *v);
     void _children(common::Node<Subtask *> *v, common::List<Subtask *> * l);
@@ -148,12 +149,12 @@ namespace task {
     bool sort_concretes_partial();
     bool sort_concretes_relation(common::List<int> *tags);
     // analysis functions
-    int dbf_exact(int t, common::List<Task *> * ts);
+    int dbf_exact(int t, Taskset * ts);
     bool is_approximable();
     bool is_elementary();
-    int dbf_approxim_baruah(int t,  common::List<Task *> * ts);
-    int dbf_exact_non_preemptif(int t, common::List<Task *> *ts);
-    int dbf(int t, int METHOD, common::List<Task *> *ts);
+    int dbf_approxim_baruah(int t,  Taskset  * ts);
+    int dbf_exact_non_preemptif(int t, Taskset *ts);
+    int dbf(int t, int METHOD, Taskset *ts);
 
     //deadline assignment functions
     bool deadline_single_task(int METHOD);
@@ -170,9 +171,9 @@ namespace task {
 
     double preemp_index();
 
-    int compute_vertex_pc(common::Node<Subtask  *> * v, common::List<Task *>  *gs);
+    int compute_vertex_pc(common::Node<Subtask  *> * v, Taskset  *gs);
     bool not_maximal_sub_set_head(common::Node<Subtask  *> *v);
-    int preemption_cost_shorter_deadlines(int D,  common::List<Task *> *g_s);
+
 
     common::List<Subtask *> * ancetors(Subtask *v);
     void _ancetors(Subtask *v, common::List<Subtask *> * l);
@@ -187,7 +188,7 @@ namespace task {
     void _children(Subtask *v, common::List<Subtask *> * l);
     bool to_dot(std::string );
     void display();
-    common::List<Task *> *generate_one(Subtask *c);
+    Taskset  *generate_one(Subtask *c);
     common::List<Communication *> * _comms();
     void _comms(common::List<Communication *> * comms);
     
@@ -198,9 +199,15 @@ namespace task {
     common::List<Buffer *> * filter_by_dst(Subtask * dst);
 
     common::List<Sema_res *> * construct_if_then_else_sema(common::Node<Subtask *> * v);
+
+    // Houssam: I need to add a function to delete the non important condition closing nodes !! reduces the complexity for elementary  tasks (not urgent) (To do for optimization reasons ) 
     
   };
 
+
+
+
+  
   class Sema_res {
   public: 
     Subtask * t; // the condition node 

@@ -85,10 +85,10 @@ namespace common {
      * @return The node of index idx if the idx is valid, otherwise it returns NULL
      */
     // Houssam :  to be optimized 
-    Node<Data > * get(int idx){
+    Node<Data > * _get(int idx){
       if(idx>size || idx < 0){
-	printf("la? \n");
-	return NULL;
+	std::cerr<<"Index out of the array, exitting " << std::endl; 
+	exit(-1);
       }
       Node<Data> * obj = head;
       for(int i=0;i<idx;i++){
@@ -97,6 +97,9 @@ namespace common {
       return obj;
     }
 
+    Data get(int idx){
+      return  _get(idx)->el;
+    }
 
     
     bool contains_string(std::string l){
@@ -199,6 +202,12 @@ namespace common {
 
     }
 
+
+    void add(Data e) {
+      add_at_tail(new Node<Data>(e));
+    }
+
+    
     /** 
      * Naive merging of the list l with the current list  
      * @param l the list to merge 

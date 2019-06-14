@@ -157,18 +157,17 @@ complex_exp:
 
   common::List<task::Subtask *> * l = new common::List<task::Subtask *> ();
   task::Task * tau = new task::Task(-1,l);
-  common::Node<std::string> * curr =  driver.temp_ident->head;
   for (int i=0;i<driver.temp_ident->size;i++){
-    if (driver.subtasks->count(curr->el)>0){
-      tau->add_subtask((*(driver.subtasks))[curr->el]);
-    }else if (driver.sgraphs->count(curr->el)>0) {
-      tau->merge_task((*(driver.subgraphs))[curr->el]);
+    std::string curr =  driver.temp_ident->get(i);
+    if (driver.subtasks->count(curr)>0){
+      tau->add_subtask((*(driver.subtasks))[curr]);
+    }else if (driver.sgraphs->count(curr)>0) {
+      tau->merge_task((*(driver.subgraphs))[curr]);
     }
     else {
-      std::cerr<<curr->el<<" is not a subgraph or a node \n"<<std::endl;
+      std::cerr<<curr->el<<" is not a subgraph or a node, exitting "<<std::endl;
       exit(-1);
     }
-    curr = curr->next;
   }
   if (driver.temp_tasks->size == 0){
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
@@ -189,22 +188,18 @@ complex_exp:
 
   common::List<task::Subtask *> * l = new common::List<task::Subtask *> ();
   task::Task * tau = new task::Task(-1,l);
-  common::Node<std::string> * curr =  driver.temp_ident->head;
+  
   for (int i=0;i<driver.temp_ident->size;i++){
-    if (driver.subtasks->count(curr->el)>0){
-
-      tau->add_subtask((*(driver.subtasks))[curr->el]);
-    }else if (driver.sgraphs->count(curr->el)>0) {
-      tau->merge_task((*(driver.subgraphs))[curr->el]);
-    }
+    common::Node<std::string> * curr =  driver.temp_ident->get(i);
+    if (driver.subtasks->count(curr)>0)
+      tau->add_subtask((*(driver.subtasks))[curr]);
+    else if (driver.sgraphs->count(curr->el)>0) 
+      tau->merge_task((*(driver.subgraphs))[curr]);
+    
     else {
-      std::cout<<"Error : Node "<<curr->el<<" is not a subtask nor a subgraph"<<std::endl;
+      std::cout<<"Error : Node "<<curr<<" is not a subtask nor a subgraph"<<std::endl;
       exit(-1);
     }
-     
-        
-
-    curr = curr->next;
   }
 
   if (driver.temp_tasks->size == 0){     
@@ -278,17 +273,14 @@ next:
 
 subgraph_exp: "sGraph" identifiers ";"
 {
-  common::Node<std::string> * curr = driver.temp_ident->head;
   for (int i=0;i<driver.temp_ident->size;i++){
-    if (driver.sgraphs->count(curr->el)>0){
-      std::cout<<"Error: Subgraph :"<<curr->el<<"has been already declared \n";
+    common::Node<std::string> * curr = driver.temp_ident->get(i);
+    if (driver.sgraphs->count(curr)>0){
+      std::cout<<"Error: Subgraph :"<<curr<<"has been already declared \n";
       exit(-1);
     }
-    driver.sgraphs->insert({curr->el,driver.sgraphs->size()});
-    curr = curr -> next;
+    driver.sgraphs->insert({curr,driver.sgraphs->size()});
   }
-
-  
   driver.temp_ident = new common::List<std::string>();
 }
 
@@ -296,53 +288,50 @@ subgraph_exp: "sGraph" identifiers ";"
 
 graph_exp: "Graph" identifiers ";"
 {
-  common::Node<std::string> * curr = driver.temp_ident->head;
   for (int i=0;i<driver.temp_ident->size;i++){
+    common::Node<std::string> * curr = driver.temp_ident->head;
     if (driver.graphs->count(curr->el)>0){
       std::cout<<"Error: Graph :"<<curr->el<<"has been already declared \n";
       exit(-1);
     }
     driver.graphs->insert({curr->el,driver.graphs->size()});
-    curr = curr -> next;
   }
   driver.temp_ident = new common::List<std::string>();
 }
 condition_exp: "Condition" identifiers ";"
 {
-  common::Node<std::string> * curr = driver.temp_ident->head;
+  
 #ifdef DEBUG 
     std::cout<<"*************************************************** "<<std::endl;
 #endif
   for (int i=0;i<driver.temp_ident->size;i++){
+    std::string curr = driver.temp_ident->get(i);
 #ifdef DEBUG 
-    std::cout<<"this is conditions: "<<curr->el<<std::endl;
+    std::cout<<"this is conditions: "<<curr<<std::endl;
 #endif
-    if (driver.conditions->count(curr->el)>0){
-      std::cout<<"Error: Condition :"<<curr->el<<"has been already declared \n";
+    if (driver.conditions->count(curr)>0){
+      std::cout<<"Error: Condition :"<<curr<<"has been already declared \n";
       exit(-1); 
     }
-    driver.conditions->insert({curr->el,driver.conditions->size()});
-    curr = curr -> next;
+    driver.conditions->insert({curr,driver.conditions->size()});
   }
 #ifdef DEBUG 
     std::cout<<"*************************************************** "<<std::endl;
 #endif
-
-    
   driver.temp_ident = new common::List<std::string>();
 }
 
 
 tagging : "Tag" identifiers ";"
 {
-  common::Node<std::string> * curr = driver.temp_ident->head;
+ 
   for (int i=0;i<driver.temp_ident->size;i++){
-    if (driver.tags->count(curr->el)>0){
-      std::cout<<"Error: Tag :"<<curr->el<<"has been already declared \n";
+    std::string curr = driver.temp_ident->get(i);
+    if (driver.tags->count(curr)>0){
+      std::cout<<"Error: Tag :"<<curr<<"has been already declared \n";
       exit(-1);
     }
-    driver.tags->insert({curr->el,driver.tags->size()});
-    curr = curr -> next;
+    driver.tags->insert({curr,driver.tags->size()});
   }
   driver.temp_ident = new common::List<std::string>();
 }

@@ -85,7 +85,7 @@ namespace code_generator {
     *mp_c<< "#include <tasks.h> \n\n";
     
     for (int i = 0; i < taskset->_size(); i++) {
-      code_generator::Task_code *task_code = new code_generator::Task_code(taskset->_list()->get(i)->el);
+      code_generator::Task_code *task_code = new code_generator::Task_code(taskset->_list()->get(i));
      
       task_code->generate_source(fp_h, fp_c);
     }
@@ -95,12 +95,12 @@ namespace code_generator {
     *mp_c<< "  int N = "+ std::to_string(taskset->_size())+";\n";
 
     std::string periods="",deadlines="",thread_names="";
-    common::Node<task::Task * > * curr_task = taskset->_list()->head;
+  
     for (int i=0;i<taskset->_size();i++){
-      periods+=std::to_string(curr_task->el->_T())+",";
-      deadlines+=std::to_string(curr_task->el->_D())+",";
-      thread_names+= ""+curr_task->el->_label()+",";
-      curr_task = curr_task -> next; 
+      task::Task  * curr_task = taskset->_list()->get(i);
+      periods+=std::to_string(curr_task->_T())+",";
+      deadlines+=std::to_string(curr_task->_D())+",";
+      thread_names+= ""+curr_task->_label()+",";
     }
 
     *mp_c<< "  pthread_t th["+std::to_string(taskset->_size())+"];";

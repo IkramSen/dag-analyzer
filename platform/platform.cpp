@@ -15,19 +15,19 @@ namespace platform{
             int tag = l_t->head->el;
             int max_c = nb_proc_tag(tag);
             for (int j = 0; j < l_t->size; j++) {
-                int ex_t = nb_proc_tag(l_t->get(j)->el);
+                int ex_t = nb_proc_tag(l_t->get(j));
                 if (ex_t < max_c) {
                     max_c = ex_t;
-                    tag = l_t->get(j)->el;
+                    tag = l_t->get(j);
                 }
             }
             for (int i = 0; i < engines->size; i++) {
-                if (tag == engines->get(i)->el->_TAG()) {
-                    l_p->add_at_tail(new common::Node<Processor *>(engines->get(i)->el));
+                if (tag == engines->get(i)->_TAG()) {
+                    l_p->add(engines->get(i));
                 }
             }
             for(int i = 0 ; i< l_p->size; i++){
-                engines->remove(l_p->get(i)->el);
+                engines->remove(l_p->get(i));
             }
             l_t->remove(tag);
         }
@@ -38,8 +38,8 @@ namespace platform{
     common::List<int> * Platform::list_tag(){
         common::List<int> * ret = new common::List<int>();
         for (int i = 0; i < engines->size ; i++) {
-            if(!ret->contains(engines->get(i)->el->_TAG())){
-                ret->add_at_tail(new common::Node<int>(engines->get(i)->el->_TAG()));
+            if(!ret->contains(engines->get(i)->_TAG())){
+                ret->add(engines->get(i)->_TAG());
             }
         }
         return ret;
@@ -47,11 +47,9 @@ namespace platform{
 
     int Platform::nb_proc_tag(int tag){
         int ret = 0;
-        for (int i = 0; i < engines->size; i++) {
-            if(engines->get(i)->el->_TAG() ==tag ){
+        for (int i = 0; i < engines->size; i++)
+            if(engines->get(i)->_TAG() ==tag )
                 ret++;
-            }
-        }
         return ret;
     }
 }

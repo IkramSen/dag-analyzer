@@ -17,51 +17,50 @@ namespace analysis{
     * @param omit (RANDOM or PARRallel): if the allocation must be parralellized, the omit is used to know how we choose the subtask to remove (use RANDOM or PARR macro).
     * @return True if the allocation is successfull, False otherwise
     **/
-    bool analyse(platform::Platform *archi,task::Taskset* tasks,int order,int slack,int alloc, int omit){
-        platform = archi;
-        platform->order_processors();
-        ts = tasks;
+  bool analyse(platform::Platform *archi,task::Taskset* tasks,int order,int slack,int alloc, int omit){
+    platform = archi;
+    platform->order_processors();
+    ts = tasks;
 
-        common::Node<task::Task*> *current = ts->_list()->head;
-        for(int i=0 ;i < ts->_list()->size;i++){
-            current->el->generate_all_conc_tag_el(ALTERNATIVE);
-            current->el->generate_all_conc_tag_el(ALTERNATIVE);
-            current->el->sort_concretes(order,platform->list_tag());
-            common::Node<task::Task *> *curconcrete = current->el->_concretes()->head;
-            for(int i = 0 ; i < current->el->_concretes()->size; i++){
-                if(!curconcrete->el->deadline_single_task(slack)){
-                    return false;
-                }
-                curconcrete->el->generate_tagged();
-                curconcrete = curconcrete->next;
-            }
-            bool allocated = false;
-            curconcrete = current->el->_concretes()->head;
-            for(int i = 0 ; i < current->el->_concretes()->size; i++){
-                if(is_feasible_sequential(alloc,curconcrete->el)){
-                    allocated=true;
-                    break;
-                }
-            }
-            if(!allocated){
-                curconcrete = current->el->_concretes()->head;
-                for(int i = 0 ; i < current->el->_concretes()->size; i++){
-                    task::Task* parr = parallelize(alloc,omit,curconcrete->el);
-                    if(parr != curconcrete->el ){
-                        ts->_list()->add_at_tail(new common::Node<task::Task *>(parr));
-                        allocated = true;
-                        break;
-                    }
-                    curconcrete = curconcrete->next;
-                }
-                if (!allocated){
-                    return false;
-                }
-            }
-            current = current->next;
-        }
-        return true;
+    for(int i=0 ;i < ts->_size();i++){
+      task::Task *current = ts->get(i); 
+
+      current->generate_all_conc_tag_el(ALTERNATIVE);
+      current->sort_concretes(order,platform->list_tag());
+	  
+      for(int j = 0 ; j < current->_concretes()->_size(); j++){
+	task::Task *curconcrete = current->_concretes()->get(j);
+	if(!curconcrete->deadline_single_task(slack))
+	  return false;
+	curconcrete->generate_tagged();
+      }
+	    
+      bool allocated = false;
+      for(int j = 0 ; j < current->_concretes()->_size(); j++){
+	task::Task * curconcrete = current->_concretes()->get(j);
+	if(is_feasible_sequential(alloc,curconcrete)){
+	  allocated=true;
+	  break;
+	}
+      }
+	    
+      if(!allocated){  
+	for(int j = 0 ; j < current->_concretes()->_size(); j++){
+	  task::Task *  curconcrete = current->_concretes()->get(j);
+	  task::Task* parr = parallelize(alloc,omit,curconcrete);
+	  if(parr != curconcrete){
+	    ts->add(parr);
+	    allocated = true;
+	    break;
+	  }
+	}
+	if (!allocated){
+	  return false;
+	}
+      }
     }
+    return true;
+  }
 
     /**
     * Try to sequentally allocate the different tagged task of the given task to corresponding engines.
@@ -71,36 +70,34 @@ namespace analysis{
     * @param task is the Task to alloc on the different engines
     * @return True if the task has been entirelly allocate sequentally, False otherwise
     **/
-    bool is_feasible_sequential(int alloc,task::Task* task){
-        common::Node<task::Task *> * curr = task->_taggeds()->head;
-        int nfeas = 0;
-        common::List<platform::Processor *> *engine_list = select_engine(curr->el->_tag());
-        for(int i =0;i<task->_taggeds()->size;i++){
-            engine_list = sort_engines(engine_list,alloc);
-            bool f = false;
-            common::Node<platform::Processor*> * curreng = engine_list->head;
-            for(int j = 0; j< engine_list->size;j++){
-                task::Taskset *copy = taskset_union(curr->el,curreng->el->_ts());
-                f = dbf_test(copy);
-                copy->~Taskset();
-                if(f){
-                    curreng->el->_ts()->_list()->add_at_tail(new common::Node<task::Task *>(curr,SAVE));
-                    nfeas++;
-                    break;
-                }
-                curreng = curreng->next;
-            }
-            if(!f){
-                return false;
-            }
-            curr = curr->next;
-        }
-        if(nfeas == task->_taggeds()->size){
-            platform->_engines(engine_list);
-            return true;
-        }
-        return false;
+  bool is_feasible_sequential(int alloc,task::Task* task){
+    common::Node<task::Task *> *  curr = task->_taggeds()->_list()->_get(0);
+    int nfeas = 0;
+    common::List<platform::Processor *> *engine_list = select_engine(curr->el->_tag());
+    for(int i =0;i<task->_taggeds()->_size();i++){
+      curr = task->_taggeds()->_list()->_get(i);
+      engine_list = sort_engines(engine_list,alloc);
+      bool f = false;
+      for(int j = 0; j< engine_list->size;j++){
+	platform::Processor * curreng = engine_list->get(j);
+	task::Taskset *copy = taskset_union(curr->el,curreng->_ts());
+	f = dbf_test(copy);
+	copy->~Taskset();
+	if(f){
+	  curreng->_ts()->_list()->add_at_tail(new common::Node<task::Task *>(curr,SAVE));
+	  nfeas++;
+	  break;
+	}
+      }
+      if(!f)
+	return false;
     }
+    if(nfeas == task->_taggeds()->_size()){
+      platform->_engines(engine_list);
+      return true;
+    }
+    return false;
+  }
 
     /**
     * Get the list of engine with the given tag (e.g. all the CPU)
@@ -110,14 +107,13 @@ namespace analysis{
     **/
     common::List<platform::Processor *>* select_engine(int TAG){
         common::List<platform::Processor *> *engines = new common::List<platform::Processor *>();
-        common::Node<platform::Processor *> * current = platform->_engines()->head;
-        for(int i=0; i < platform->_engines()->size;i++){
-            if(current->el->_TAG() == TAG){
+	for(int i=0; i < platform->_engines()->size;i++){
+	  common::Node<platform::Processor *> * current = platform->_engines()->_get(i);
+	  if(current->el->_TAG() == TAG){
                 common::Node<platform::Processor *> * newnode = new common::Node<platform::Processor *>(current,SAVE);
                 newnode->el = newnode->el->copy();
                 engines->add_at_tail(newnode);
             }
-            current = current->next;
         }
         return engines;
     }
@@ -132,27 +128,29 @@ namespace analysis{
     * @param alloc is the type of alloc you want to use (use BF or WF macro)
     * @return The sorted list of available engine according the used alloc
     */
-    common::List<platform::Processor*> *sort_engines(common::List<platform::Processor*> *engines, int alloc){
-        common::List<platform::Processor*> *l_p = new common::List<platform::Processor*>();
-        while (engines->size > 0){
-            platform::Processor *max_p=engines->head->el;
-            int max_c= max_p->_ts()->utilization();
-            common::Node<platform::Processor*> * curr = engines->head;
-            for (int j=0;j<engines->size;j++){
-                int ex_t  = curr->el->_ts()->utilization();
-                bool ok = alloc == BF ? ex_t> max_c : ex_t < max_c;
-                if (ok){
-                    max_c  = ex_t;
-                    max_p = curr->el;
-                }
-                curr = curr->next;
-            }
-            engines->remove(max_p);
-            l_p->add_at_tail(new common::Node<platform::Processor*>(max_p));
-        }
-        return l_p;
+  common::List<platform::Processor*> *sort_engines(common::List<platform::Processor*> *engines, int alloc){
+    common::List<platform::Processor*> *l_p = new common::List<platform::Processor*>();
+    while (engines->size > 0){
+      platform::Processor *max_p=engines->head->el;
+      int max_c= max_p->_ts()->utilization();
+      
+      for (int j=0;j<engines->size;j++){
+	platform::Processor * curr = engines->get(j);
+	int ex_t  = curr->_ts()->utilization();
+	bool ok = alloc == BF ? ex_t> max_c : ex_t < max_c;
+	if (ok){
+	  max_c  = ex_t;
+	  max_p = curr;
+	}
+      }
+      engines->remove(max_p);
+      l_p->add_at_tail(new common::Node<platform::Processor*>(max_p));
     }
+    return l_p;
+  }
 
+
+  //May be it should be move to the taskset class 
     /**
     * DBF test for the given taskset
     *
@@ -163,10 +161,8 @@ namespace analysis{
         int hyper = ts->hyperperiod(),dbf;
         for(int t=0 ;t <hyper;t++){
             dbf = 0;
-            common::Node<task::Task *>*curtask = ts->_list()->head;
             for(int j =0;j<ts->_list()->size;j++){
-                dbf += curtask->el->dbf(t,BARUAH_APPROX,ts->_list());
-                curtask = curtask->next;
+	      dbf += ts->_list()->get(j)->dbf(t,BARUAH_APPROX,ts);
             }
             if(dbf>t){
                 return false;
@@ -187,49 +183,47 @@ namespace analysis{
     task::Task *parallelize(int alloc,int omit,task::Task* task){
         task::Task * tp = task->copy();
         task::Task * tsec = task->copy();
-        common::Node<task::Subtask *> *currsub = tsec->_subtasks()->head;
-        for(int i =0; i<tsec->_subtasks()->size;i++){
-            currsub->empty=true;
-            currsub = currsub->next;
-        }
-        common::Node<task::Task *> * curr = task->_taggeds()->head;
+        for(int i =0; i<tsec->_subtasks()->size;i++)
+	  tsec->_subtasks()->_get(i)->empty=true;
+        
+
         bool allocated = false;
         common::List<platform::Processor *> *engine_list;
-        for(int i= 0; i<task->_taggeds()->size;i++){
-            engine_list = select_engine(curr->el->_tag())->copy();
+        for(int i= 0; i<task->_taggeds()->_size();i++){
+
+	  task::Task * curr = task->_taggeds()->get(i);
+	  engine_list = select_engine(curr->_tag())->copy();
             engine_list =sort_engines(engine_list,alloc);
-            common::Node<platform::Processor*> * curreng = engine_list->head;
+            
             for(int j = 0;j < engine_list->size;j++){
-                task::Taskset *copy = taskset_union(curr->el,curreng->el->_ts());
-                bool empty = true;
-                bool f = dbf_test(copy);
-                while(!f){
-                    task::Subtask* removedsubtask = omit_remove(tp->get_tagged_task(curr->el->_tag()),omit);
-                    tp->get_tagged_task(curr->el->_tag())->_subtasks()->find_element(removedsubtask)->empty=true;
-                    tsec->get_tagged_task(curr->el->_tag())->_subtasks()->find_element(removedsubtask)->empty=false;
-                    copy = taskset_union(tp->get_tagged_task(curr->el->_tag()),curreng->el->_ts());
-                    f = dbf_test(copy);
-                }
-                common::Node<task::Subtask *> *currts = tsec->get_tagged_task(curr->el->_tag())->_subtasks()->head;
-                for(int k=0;k<tsec->get_tagged_task(curr->el->_tag())->_subtasks()->size ;k++ ){
-                    if(!currts->empty){
-                        empty = false;
-                        break;
-                    }
-                    currts = currts->next;
-                }
-                if(!empty){
-                    curreng->el->_ts()->_list()->add_at_tail(new common::Node<task::Task *>(tsec->get_tagged_task(curr->el->_tag())));
-                    //tp->_taggeds()->find_element(curr->el)->el = tp->merge();
-                    allocated = true;
-                    break;
-                }
-                curreng = curreng->next;
+	      platform::Processor * curreng = engine_list->get(j);
+	      task::Taskset *copy = taskset_union(curr,curreng->_ts());
+	      bool empty = true;
+	      bool f = dbf_test(copy);
+	      while(!f){
+		task::Subtask* removedsubtask = omit_remove(tp->get_tagged_task(curr->_tag()),omit);
+		tp->get_tagged_task(curr->_tag())->_subtasks()->find_element(removedsubtask)->empty=true;
+		tsec->get_tagged_task(curr->_tag())->_subtasks()->find_element(removedsubtask)->empty=false;
+		copy = taskset_union(tp->get_tagged_task(curr->_tag()),curreng->_ts());
+		f = dbf_test(copy);
+	      }
+
+	      for(int k=0;k<tsec->get_tagged_task(curr->_tag())->_subtasks()->size ;k++ )
+		if(!tsec->get_tagged_task(curr->_tag())->_subtasks()->_get(k)->empty){
+		  empty = false;
+		  break;
+		}
+   
+	     
+	      if(!empty){
+		curreng->_ts()->_list()->add(tsec->get_tagged_task(curr->_tag()));
+		allocated = true;
+		break;
+	      }
             }
             if(!allocated){
-                return task;
+	      return task;
             }
-            curr = curr->next;
         }
         platform->_engines(engine_list);
         return tsec;
@@ -245,12 +239,11 @@ namespace analysis{
     **/
     task::Subtask * omit_remove(task::Task *tau, int omit){
         common::List<task::Subtask *> *v_l= new common::List<task::Subtask *>();
-        common::Node<task::Subtask *>* curr = tau->_subtasks()->head;
+      
         for(int i=0;i<tau->_subtasks()->size;i++){
-            if(!curr->empty){
-               v_l->add_at_tail(new common::Node<task::Subtask *>(curr,SAVE));
-            }
-            curr = curr->next;
+	  common::Node<task::Subtask *>* curr = tau->_subtasks()->_get(i);
+	  if(!curr->empty)
+	    v_l->add_at_tail(new common::Node<task::Subtask *>(curr,SAVE));
         }
         if(v_l->size){
             return NULL;
@@ -259,7 +252,7 @@ namespace analysis{
             case RANDOM: {
                 std::srand(std::time(NULL));
                 int chosenidx = std::rand() % v_l->size;
-                return v_l->get(chosenidx)->el;
+                return v_l->get(chosenidx);
             }
             case PARR: {
                 return select_preemp_aware(tau);

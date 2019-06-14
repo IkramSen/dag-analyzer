@@ -15,6 +15,7 @@ namespace platform{
         bool order_processors();
         int nb_proc_tag(int tag);
         common::List<int> *list_tag();
+      int _size(); 
     };
 }
 
