@@ -8,7 +8,6 @@
 #include "code_gen/subtask_code.hpp"
 #include "code_gen/taskset_code.hpp"
 
-
 int main(int arc, char** argv) {
 
   // Instantiation of a graph nodes, i. e. the graph subtask.

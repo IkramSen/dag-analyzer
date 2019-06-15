@@ -4,6 +4,7 @@
 #include <map>
 #include "hdag_parser.hh"
 #include "../common/list.hpp"
+#include "../common/common.hpp"
 #include "../task/subtask.hpp"
 #include "../task/task.hpp"
 
@@ -31,8 +32,6 @@ public:
   std::map<std::string, task::Task *> * subgraphs;
   std::map<std::string, task::Task *> * tasks;
 
-
-  
   // jen e sais pas si je dois 
   common::List<task::Task * > * temp_tasks;
   common::List<std::string> * subgraphs_names;

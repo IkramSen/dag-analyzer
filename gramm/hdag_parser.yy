@@ -120,7 +120,7 @@ generating:  "generate" "(" "identifier" "," "quoted" ")" ";"
     (*(driver.tasks))[$3]->to_dot(s);
   }
   else {
-    std::cerr<<"Error: dot generation error"<<$3<<" is not a graph nor a sub-graph"<<std::endl;
+    std::cerr<<"Error: "<<$3<<" must be a  graph or a sub-graph"<<std::endl;
     exit(-1);
   }
 }
@@ -144,7 +144,6 @@ graph_remp :  "identifier" "=" "{" complex_exp "}" ";"
 #ifdef DEBUG
   std::cout<<"Expression with "<< $1 <<" has been correctly  added as a graph or subgraph"<<std::endl;
 #endif
-
   driver.temp_tasks = new common::List<task::Task *>();
 };
 
@@ -154,18 +153,16 @@ complex_exp:
 |complex_exp  conditional
 |complex_exp "par" "(" identifiers ")" ";"
 {
-
   common::List<task::Subtask *> * l = new common::List<task::Subtask *> ();
   task::Task * tau = new task::Task(-1,l);
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string curr =  driver.temp_ident->get(i);
-    if (driver.subtasks->count(curr)>0){
+    if (driver.subtasks->count(curr)>0)
       tau->add_subtask((*(driver.subtasks))[curr]);
-    }else if (driver.sgraphs->count(curr)>0) {
+    else if (driver.sgraphs->count(curr)>0)
       tau->merge_task((*(driver.subgraphs))[curr]);
-    }
     else {
-      std::cerr<<curr->el<<" is not a subgraph or a node, exitting "<<std::endl;
+      std::cerr<<curr<<" is not a subgraph or a node, exitting "<<std::endl;
       exit(-1);
     }
   }
@@ -180,28 +177,22 @@ complex_exp:
 }
 |complex_exp "alta" "(" identifiers ")" ";"
 {
-
   task::Subtask *s = new task::Subtask(s_id,0,0,ALTERNATIVE,-1);
   s->_label("ALT"+std::to_string(s_id));
   s_id ++;
-
-
   common::List<task::Subtask *> * l = new common::List<task::Subtask *> ();
   task::Task * tau = new task::Task(-1,l);
-  
   for (int i=0;i<driver.temp_ident->size;i++){
-    common::Node<std::string> * curr =  driver.temp_ident->get(i);
+    std::string curr =  driver.temp_ident->get(i);
     if (driver.subtasks->count(curr)>0)
       tau->add_subtask((*(driver.subtasks))[curr]);
-    else if (driver.sgraphs->count(curr->el)>0) 
+    else if (driver.sgraphs->count(curr)>0) 
       tau->merge_task((*(driver.subgraphs))[curr]);
-    
     else {
-      std::cout<<"Error : Node "<<curr<<" is not a subtask nor a subgraph"<<std::endl;
+      std::cerr<<"Error : Node "<<curr<<" is must be a subtask or a subgraph"<<std::endl;
       exit(-1);
     }
   }
-
   if (driver.temp_tasks->size == 0){     
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
     task::Task * tau  = new task::Task(-1,l_);
@@ -209,7 +200,6 @@ complex_exp:
   }
   tau->link_new_entry(s);
   driver.temp_tasks->tail()->el->link_task_after(tau);
-
 }
 
 
@@ -274,9 +264,9 @@ next:
 subgraph_exp: "sGraph" identifiers ";"
 {
   for (int i=0;i<driver.temp_ident->size;i++){
-    common::Node<std::string> * curr = driver.temp_ident->get(i);
+    std::string  curr = driver.temp_ident->get(i);
     if (driver.sgraphs->count(curr)>0){
-      std::cout<<"Error: Subgraph :"<<curr<<"has been already declared \n";
+      std::cerr<<"Error: Subgraph :"<<curr<<" has been already declared"<<std::endl;
       exit(-1);
     }
     driver.sgraphs->insert({curr,driver.sgraphs->size()});
@@ -284,23 +274,60 @@ subgraph_exp: "sGraph" identifiers ";"
   driver.temp_ident = new common::List<std::string>();
 }
 
-
-
-graph_exp: "Graph" identifiers ";"
+graph_exp:  "Graph" "identifier" parenthesis_node ";"
 {
-  for (int i=0;i<driver.temp_ident->size;i++){
-    common::Node<std::string> * curr = driver.temp_ident->head;
-    if (driver.graphs->count(curr->el)>0){
-      std::cout<<"Error: Graph :"<<curr->el<<"has been already declared \n";
+  std::map<std::string, std::string>::iterator it;
+  int D=-1, T=-1;
+  for (it = driver.temp_couples->begin(); it != driver.temp_couples->end(); it++ ){
+    if (it->first.compare("T")==0){
+      try {
+      T=std::stoi(it->second,nullptr,10);
+	if (T < 0){
+	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter T must be a positive integer  \n";
+	  exit(-1);
+	}
+	continue;
+      }
+      catch (std::invalid_argument e){
+	std::cerr<<"Error in declaring Node \""<<$2<<"\": The parameter T must be an integer "<<std::endl;
+	exit(-1);
+      } 
+    }
+    else if (it->first.compare("D")==0){
+      try {
+      D=std::stoi(it->second,nullptr,10);
+	if (D < 0){
+	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter D must be a positive integer  \n";
+	  exit(-1);
+	}
+	continue;
+      }
+      catch (std::invalid_argument e){
+	std::cerr<<"Error in declaring Node \""<<$2<<"\": The parameter D must be an integer "<<std::endl;
+	exit(-1);
+      } 
+    }
+    else {
+      std::cerr<<"Error in declaring Node \""<<$2<<"\": is  a unknown option "<<std::endl; 
       exit(-1);
     }
-    driver.graphs->insert({curr->el,driver.graphs->size()});
   }
-  driver.temp_ident = new common::List<std::string>();
+
+
+  if (D==-1 || T==-1){
+    std::cerr<<"Parameters D and T are mondatory"<<std::endl; 
+    exit(-1);
+  }
+  if (driver.graphs->count($2)>0){
+      std::cout<<"Error: Graph :"<<$2<<"has been already declared \n";
+      exit(-1);
+    }
+  driver.graphs->insert({$2,driver.graphs->size()});
+  driver.temp_couples = new std::map<std::string,std::string>();
 }
+
 condition_exp: "Condition" identifiers ";"
 {
-  
 #ifdef DEBUG 
     std::cout<<"*************************************************** "<<std::endl;
 #endif
@@ -406,7 +433,7 @@ node_exp:  "Node" "identifier" parenthesis_node ";"
       try {
 	C=std::stoi(it->second,nullptr,10);
 	if (C < 0){
-	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter C must be a positive integer  \n";
+	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The arameter C must be a positive integer  \n";
 	  exit(-1);
 	}
 	continue;
@@ -486,7 +513,6 @@ parenthesis_node : "(" equality  ")"                    {};
 
 equality : "identifier" "=" "identifier"
 {
-      
   if (driver.temp_couples->count($1) > 0){
     std::cerr<<$1<<" property has already been declared for the current element \n";
     exit(-1);

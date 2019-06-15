@@ -3,7 +3,7 @@
 
 namespace task {
 
-  // Houssam : Not sure that this is working now
+  // Houssam : Not sure that this is used & working now
   /** 
    * Compute the first conditions in the successors of the the input sub-task
    * The input subtask has to be unique 
@@ -667,7 +667,7 @@ namespace task {
       }
       return;
     }
-   common::Node<Subtask *> *  curr = L->_get(0);
+    common::Node<Subtask *> *  curr = L->_get(0);
     ts_gen = generate_one(curr);
     int s = 0; 
     if (L->size>1)
@@ -936,7 +936,8 @@ namespace task {
    */
   void Task::filter_subtasks_between(common::Node<Subtask *> *v_s,
 				     common::Node<Subtask *> *v_d,
-				     common::List<Subtask *> *p, common::List<common::List<Subtask *> *> * pp){
+				     common::List<Subtask *> *p,
+				     common::List<common::List<Subtask *> *> * pp){
     p->add_at_tail(new common::Node<Subtask *>(v_s->el));
  
     common::List<Subtask *> *succs = successors(v_s);
@@ -1494,7 +1495,7 @@ namespace task {
   }
 
   
-   /**
+  /**
    * Create the dot representation of the task.
    * @param path The path the file will be writen to
    * @return The dot file has been successfully created
