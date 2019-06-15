@@ -30,4 +30,3 @@ main.o: main.cc
 .PHONY: clean
 clean:
 	rm *.o hdag_parser.hh hdag_parser.cc hdag_scanner.cc location.hh position.hh stack.hh main.out ../task/*.o ../common/*.o
-
