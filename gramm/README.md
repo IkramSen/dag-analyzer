@@ -58,13 +58,18 @@ the node declaration, as well as the task TAG is a heterogeneous
 architecture is considered. For example:
 
 ```c
-Node dd(C=4, PC=3, TAG=GPU);
+Node dd(C=4, PC=3, TAG=GPU,"TT"="BB");
 ``` 
 
 defines that node **dd** has a preemption cost of 3 ms and can only
 execute within a GPU node. If **PC** is not explicitly mentioned, it
 is considered as equal to **0**. If the **TAG** is not specified, it
-is considered as the default **TAG**.
+is considered as the default **TAG**. The user may define extra
+parameters to a given subtask so it can be used for
+extra-functionalities that are not provided by the current version of
+the tool. In contrast to the other optional properties, he execution
+time property is mondatory, and an error is generated and compilation
+will be aborted if not available.
 
 
 
@@ -95,19 +100,32 @@ Node p2(C=2, TAG=CPU);
 Node seq2(C=1, TAG=CPU);
 
 Graph tau(T=50,D=40);
+
 tau={
   seq1;
   par(p1,p2);
   seq2;
 };
+
 generate(tau,"/tmp/gr.dot");
 ``` 
 
+Let now explain each line of the above listing. The first Line is
+similar to the Tags described in Hardware modeling section. Further,
+we describe each thread/functionality as in the previous example.
+Further, we describe the task behavior and composition, therefore the
+subtasks are ordered according to their appearance/calling order in
+the task structure description block. Thus, the graph **tau** starts
+by seq1. Further, we find the keyword **par**, therefore all nodes
+between the parenthesis after par are supposed to be executed in
+parallel. Therefore, **p1** and **p2** can be executed in parallel
+after **seq1** has finished its execution. At the end of the execution
+of both **p1** and **p2**, the execution continues onward by executing
+*seq2*. **par** operation is not only binary, it can take several
+nodes (more than one).
 
-
-
-
-
-
-The user may visualize the resulted task by calling using the keyword
-**generate**. As the task in this first example is simple, we would
+After the task declaration block, the **generate** keyword allows to
+ visualize the graph structure of task **tau**, and print it in
+ "/tmp/gr.dot" in **GraphViz** (dot) format.
+ 
+ 
