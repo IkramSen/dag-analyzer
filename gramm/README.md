@@ -5,8 +5,8 @@ Auteur : Houssam-Eddine Zahaf
 This part of the HPC DAG Analyzer aims to provide a grammar to
 describe the hardware architecture and the software stack using the
 HPC DAG Model. Please, first overview the architecture and ssytem mode
-section of paper authored by Zahaf et el. entitled : **The HPC DAG
-task Model for heterogeneous real-time system**.
+section of paper authored by Zahaf et el. entitled : **"The HPC DAG
+task Model for heterogeneous real-time system"**.
 
 ## The hardware description : 
 ## The software description :
@@ -68,8 +68,23 @@ is considered as the default **TAG**.
 
 
 
+### A parallel task example using directed acyclic graphs
+
+The user may want to express parallelization and more complex
+execution patterns than those of LL model. Here we provide a new
+example.
+
+
+Let tau be a task compound of a sequential thread **seq1**, two
+parallel threads **p1** and **p2** to join back a sequential thread
+**seq2** as described in the following Figure 
+
+
+![Example of fork join parallel style ](figs/fork_join.svg)
+
+
 
 
 
 The user may visualize the resulted task by calling using the keyword
-**generate**. As the task in this first example is simple, we would 
+**generate**. As the task in this first example is simple, we would
