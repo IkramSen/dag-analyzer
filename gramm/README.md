@@ -80,7 +80,7 @@ parallel threads **p1** and **p2** to join back a sequential thread
 **seq2** as described in the following Figure 
 
 
-![Example of fork join parallel style ](figs/fork_join.svg)
+![Example of fork join parallel style ](figs/fork_join.png)
 
 
 
