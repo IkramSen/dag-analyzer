@@ -17,9 +17,9 @@ We introduce the different features of our langage by example. First
 let define a Liu and LayLand task. Therefore the task is a executed
 using a single thread, characterized by :
 
-	- **C:** The task worst case execution time 
-	- **D**  The task deadline
-	- **T**  The task period, the time duration between to activations of the same 
-	- **PC** The task preemtion cost, which is the cost to account, if this task is preempted
+- **C:** The task worst case execution time 
+- **D**  The task deadline
+- **T**  The task period, the time duration between to activations of the same 
+- **PC** The task preemtion cost, which is the cost to account, if this task is preempted
 
 
