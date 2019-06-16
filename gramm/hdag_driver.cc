@@ -15,13 +15,10 @@ hdag_driver::hdag_driver ()
   subgraphs = new std::map<std::string, task::Task *> () ;
   tasks = new std::map<std::string, task::Task *>();
   int subtask_id;
-
   temp_tasks = new common::List<task::Task * > ();
   subgraphs_names = new common::List<std::string>();
   tasks_names = new common::List<std::string>();
-
   subtask_id=0;
-  printf("subtask_id %d  \n", subtask_id);
 }
 
 hdag_driver::~hdag_driver () {

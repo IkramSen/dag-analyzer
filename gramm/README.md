@@ -68,7 +68,7 @@ is considered as the default **TAG**.
 
 
 
-### A parallel task example using directed acyclic graphs
+### A parallel task example using directed acyclic graphs (examples/fork_join.c)
 
 The user may want to express parallelization and more complex
 execution patterns than those of LL model. Here we provide a new
@@ -83,6 +83,28 @@ parallel threads **p1** and **p2** to join back a sequential thread
 <!-- ![Example of fork join parallel style ](figs/fork_join.png) -->
 
 <div style="text-align:center"><img src="figs/fork_join.png" /></div>
+
+Such a graph can be described using our grammar as following: 
+
+
+```c
+Tag CPU, GPU;
+Node seq1(C=4, TAG=CPU);
+Node p1(C=4,PC=3,TAG=GPU);
+Node p2(C=2, TAG=CPU);
+Node seq2(C=1, TAG=CPU);
+
+Graph tau(T=50,D=40);
+tau={
+  seq1;
+  par(p1,p2);
+  seq2;
+};
+generate(tau,"/tmp/gr.dot");
+``` 
+
+
+
 
 
 

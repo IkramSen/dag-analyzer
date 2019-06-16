@@ -6,7 +6,7 @@ int
 main (int argc, char *argv[])
 {
   if (argc < 2)
-    fatal_error("Usage: [Exec-Parser] [input-file]");
+    fatal_error(0,"Usage: [Exec-Parser] [input-file]");
 
   int res = 0;
   hdag_driver driver;

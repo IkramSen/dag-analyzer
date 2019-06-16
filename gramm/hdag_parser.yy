@@ -294,7 +294,7 @@ condition_exp: "Condition" identifiers ";"
     std::string curr = driver.temp_ident->get(i);
     PRINT_DEBUG("this is conditions: "+curr+"\n"); 
     if (driver.conditions->count(curr)>0)
-      fatal_error(13, "Condition :\""<<curr<<"\" has been already declared");
+      fatal_error(13, "Condition :\""+curr+"\" has been already declared");
     driver.conditions->insert({curr,driver.conditions->size()});
   }
   PRINT_DEBUG( "*************************************************** \n"); 
@@ -332,7 +332,7 @@ identifier_c : "if" "(" "identifier" ")"
   std::cout<<"This is the count : " << driver.conditions->count($3)<<"This is the test  " << (*(driver.conditions))[$3]<<std::endl;
 #endif
   if (driver.conditions->count($3)==0)
-    fatal_error(15,"Condition :\""<<$3<<"\# has not been declared");
+    fatal_error(15,"Condition :\""+$3+"\# has not been declared");
 
   task::Subtask * s = new task::Subtask(s_id,0,0,CONDITION,-1);
   s->_label($3);
@@ -363,7 +363,7 @@ node_exp:  "Node" "identifier" parenthesis_node ";"
     bool tag_found= false;
     if (it->first.compare("TAG")==0){
       if (driver.tags->count(it->second)==0)
-	fatal_error(16,"Tag \""<<it->second<<"\" was not declared in this scope");
+	fatal_error(16,"Tag \""+it->second+"\" was not declared in this scope");
       tag= it->second;
       continue;
     }
@@ -371,31 +371,30 @@ node_exp:  "Node" "identifier" parenthesis_node ";"
       try {
 	C=std::stoi(it->second,nullptr,10);
 	if (C < 0)
-	  fatal_error(17," \""<<$2<<"\" : The arameter C must be a positive integer");
+	  fatal_error(17," \""+$2+"\" : The arameter C must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	fatal_error(18, " Node \""<<$2<<"\": The parameter C must be an integer");
+	fatal_error(18, " Node \""+$2+"\": The parameter C must be an integer");
       }
     }
     else if (it->first.compare("PC")==0){
       try {
 	PC=std::stoi(it->second,nullptr,10);
 	if (PC < 0)
-	  fatal_error(19," \""<<$2<<"\" : The parameter PC must be a positive integer");
+	  fatal_error(19," \""+$2+"\" : The parameter PC must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	fatal_error(28," Node \""<<$2<<"\" : The parameter PC must be an integer");
+	fatal_error(28," Node \""+$2+"\" : The parameter PC must be an integer");
       }
     }
     properties->insert({it->first,it->second});
   }
   if (C==-1)
-    fatal_error(29,"Node \""<<$2<<"\" : The parameter C is mondatory");
-  if (tag.compare("EMPTY_TAG")==0){
+    fatal_error(29,"Node \""+$2+"\" : The parameter C is mondatory");
+  if (tag.compare("EMPTY_TAG")==0)
     std::cerr<<"Warning: Tag not declared for  Node \""<<$2<<"\", it will be set to default TAG \n";
-  }
 
   task::Subtask * st = new task::Subtask(s_id, C, PC, COMPUTE, (*(driver.tags))[tag]);
   st->_label($2);
