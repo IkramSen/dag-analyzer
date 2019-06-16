@@ -26,7 +26,7 @@ using a single thread, characterized by :
 
 Each task definition is considered as a Graph, task **tau** can be defined as follows:
 
-	'''
+	'''c
 	Graph tau(T=50,D=40);	
 	'''
 
