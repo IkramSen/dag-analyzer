@@ -3,9 +3,10 @@
 
 #define  SAVE 1
 #define  VOLA 0
-#include<iostream>
+#include <iostream>
 #include <stdio.h>
 #include <cmath>
+#include "common.hpp"
 
 namespace common {
   template <class Data> class Node {
@@ -54,7 +55,8 @@ namespace common {
      */
     void display(){
       el->display();
-      std::cout<<"\t [Additional: t_id : "<<t_id<<",D:"<<D<<", O: "<<O<<", empty: " << (empty ? "true":"false")<<" ]"<<std::endl;
+      std::cout<<"\t [Additional: t_id : "<<t_id<<",D:"<<D<<", O: "<<O<<", empty: " <<
+	(empty ? "true":"false")<<" ]"<<std::endl;
     }
   };
 
@@ -86,22 +88,29 @@ namespace common {
      */
     // Houssam :  to be optimized 
     Node<Data > * _get(int idx){
-      if(idx>size || idx < 0){
-	std::cerr<<"Index out of the array, exitting " << std::endl; 
-	exit(-1);
-      }
+      if(idx>size || idx < 0)
+	fatal_error(34,"Index out of the array, exitting"); 
       Node<Data> * obj = head;
       for(int i=0;i<idx;i++){
         obj = obj->next;
       }
       return obj;
     }
-
+    
+    /**
+     *  Getting the data indexed by idx 
+     * @param idx The index of the target element
+     * @return The data contained in the node in the list 
+     */
     Data get(int idx){
       return  _get(idx)->el;
     }
 
-    
+    /** 
+     *  Checks weither the string l is available in the string list l 
+     * @param l the string we are looking for 
+     * @return True if the list exist, otherwise false 
+     */ 
     bool contains_string(std::string l){
       Node<Data> * obj = head;
       for(int i=0;i<size;i++){
@@ -179,30 +188,22 @@ namespace common {
      * @param e the Node we want to add 
      */
     void add_at_tail(Node<Data > *e) {
-#ifdef DEBUG
-      std::cout<<"Adding to tail called"<<std::endl;      
-#endif
+      PRINT_DEBUG("Adding to tail called\n");
       if (!head){
-#ifdef DEBUG
-	std::cout<<"The list is empty"<<std::endl;      
-#endif
+	PRINT_DEBUG("The list is empty \n");
 	head=e;
       }else {
-#ifdef DEBUG
-	std::cout<<"The list is empty"<<std::endl;      
-#endif
+	PRINT_DEBUG("The list is empty \n");
         Node<Data> *last = tail();
         last->next = e;
 	e->next= NULL;
       }
       size++;
-#ifdef DEBUG
-      std::cout<<"Exiting add_at_tail call"<<std::endl;      
-#endif
-
+      PRINT_DEBUG("finishing add_at_tail call \n");
     }
 
 
+    // Houssam : complete doxy
     void add(Data e) {
       add_at_tail(new Node<Data>(e));
     }

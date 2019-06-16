@@ -224,7 +224,6 @@ namespace task {
     common::List<common::List<Subtask *> *> * pp =  new common::List<common::List<Subtask *> *>();
     filter_subtasks_between(v_s,v_d, p, pp);  
     common::List <Subtask *> * merged = pp->head->el->copy();
-    common::Node<common::List<Subtask *> *> * curr; 
     for (int i=0;i<pp->size-1;i++)
       merged->merge_without_duplicates(pp->get(i+1)->copy());
      
@@ -400,11 +399,9 @@ namespace task {
    */
   bool Task::link_two_subtasks(common::Node<Subtask *> *v1, common::Node<Subtask *> *v2){
     if (!subtasks->contains(v1->el) || !subtasks->contains(v2->el))
-      {
-	std::cerr<<"Unable to link subtasks "+v1->el->_label()+" and "+v2->el->_label()<<std::endl;
-	std::cerr<<"Please check that both are added to the task before linking them "<<std::endl;
-	exit(-1);
-      }
+	fatal_error(43,"Unable to link subtasks "+v1->el->_label()+" and "+v2->el->_label()+" \n"+
+		    "Please check that both are added to the task before linking them ");
+
     graph[v1->t_id][v2->t_id]=1;
     return true;
   }
@@ -627,16 +624,11 @@ namespace task {
 	  common::Node<Subtask *> *equi = tau->subtasks->find_element(preds->get(f));
 	  tau->graph[equi->t_id][next->t_id]=1;
 	}
-#ifdef DEBUG
-	std::cout<<"A task has been generated and added "<<std::endl;
-#endif
+	PRINT_DEBUG("A task has been generated and added \n ");
 	ts->add(tau);
       }
-     
     }
-#ifdef DEBUG
-    std::cout<<"Exitting the generating function "<<std::endl;
-#endif
+    PRINT_DEBUG("Exitting the generating function \n");
     return ts;
   }
 
@@ -693,14 +685,15 @@ namespace task {
    * @return The calculate dbf
    */
   int Task::dbf_exact(int t, Taskset * ts){
+    PRINT_DEBUG("dbf task called for time "+std::to_string(t)+"  and Task"+ label);
     int dbf = 0;
     if (is_elementary()){
+      PRINT_DEBUG("The task is elementary \n");
       for (int i =0;i<subtasks->size;i++){
 	common::Node<Subtask *> * curr = subtasks->_get(i);
 	int t_dbf = 0;
 	if (curr->empty)
 	  continue;
-
 	for (int j=0;j<subtasks->size;j++){
 	  common::Node<Subtask *> * curr_j = subtasks->_get(j);
 	  int _O=  0;
@@ -708,17 +701,16 @@ namespace task {
 	    _O = T - curr->O + curr_j->O ;
 	  else
 	    _O =  curr_j->O - curr->O;
-	  if (!curr_j->empty){
+	  if (!curr_j->empty)
 	    t_dbf += std::floor((t- _O - curr_j->D + T)/T) * (curr_j->el->_C() + compute_vertex_pc(curr_j,ts));
-	  }
 	}
 	dbf = std::max(dbf,t_dbf);
       }
     }
     else {
-      for (int i=0;i<elems->_size();i++){
+      PRINT_DEBUG("The task is not elementary \n");
+      for (int i=0;i<elems->_size();i++)
 	dbf=std::max(dbf,elems->get(i)->dbf_exact(t,ts));
-      }
     }
     return dbf;
   }
@@ -818,9 +810,9 @@ namespace task {
 	return dbf_exact_non_preemptif(t,ts_clear);
 	break;
       default:
-	std::cout<<"UNKNOW OPTION.. EXITTING"<<std::endl;
-	exit(-1);
+	fatal_error(47,"UNKNOW OPTION.. EXITTING");
       }
+    return -1;
   }
   
   /**
@@ -1025,10 +1017,7 @@ namespace task {
    * @param l The childrens list to update
    */
   void Task::_children(common::Node<Subtask *> *v, common::List<Subtask *> * l){
-#ifdef DEBUG
-    std::cout<<"Calling sub function _children for subask"<<std::endl;
-    v->display();
-#endif
+    PRINT_DEBUG("Calling sub function _children for subask "+v->el->_id());
     common::List<Subtask *> * child_l = successors(v);
     l->merge_without_duplicates(child_l);
     for (int i=0;i<child_l->size;i++){
@@ -1344,10 +1333,8 @@ namespace task {
       ret = sort_concretes_partial();
     }else if(order == RELATION){
       ret = sort_concretes_relation(tags);
-    }else{
-      printf("CONCRETE SORTING ORDER DON'T EXISTS...EXITINg\n");
-      exit(-1);
-    }
+    }else
+      fatal_error(48, "Unknown  sorting order, exitting");
     return ret;
   }
 
@@ -1501,15 +1488,11 @@ namespace task {
    * @return The dot file has been successfully created
    */
   bool Task::to_dot(std::string path){
-#ifdef DEBUG
-    std::cout<<"-> Calling to dot for task: "<<id<<"\n";
-#endif
+    PRINT_DEBUG("Calling to dot for task: "+label+"\n");
     std::ofstream outdata;
     outdata.open(path); // opens the file
-    if( !outdata ) { // file couldn't be opened
-      std::cerr << "Error: File can not be openned: Writting failed, exitting" << std::endl;
-      exit(-1);;
-    }
+    if( !outdata )
+      fatal_error(48, " File can not be openned: Writting failed, exitting" );
     outdata << "digraph mon_graphe {\n" << std::endl;
     for (int i = 0 ; i<_size(); i++){
       Subtask *current = subtasks->get(i);
@@ -1528,8 +1511,7 @@ namespace task {
 	  outdata<< current->_label() <<" [shape=circle]"<<std::endl;
 	  break;
 	default:
-	  std::cout<<"UNKNOW NODE TYPE.. EXITTING"<<std::endl;
-	  exit(-1);
+	  fatal_error(49,"Unsupported node type, exiting");
 	}
     }
     
@@ -1543,10 +1525,7 @@ namespace task {
     }
     outdata<<"}"<<std::endl;
     outdata.close();
-
-#ifdef DEBUG
-    printf("End of to_dot call \n");
-#endif
+    PRINT_DEBUG("End of to_dot call \n");
     return 0;
   }
     

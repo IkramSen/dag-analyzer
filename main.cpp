@@ -29,7 +29,8 @@ int main(int argc, char ** argv){
   l->add_at_head(v7);
   l->add_at_head(v8);
 
-  
+
+
   task::Task *tau = new task::Task(1,l);
   tau->link_two_subtasks(v1,v2);
   tau->link_two_subtasks(v2,v3);
@@ -41,14 +42,17 @@ int main(int argc, char ** argv){
   tau->link_two_subtasks(v6,v8);
 
 
+
   tau->to_dot("/tmp/tt.dot");
 
-
+  // Houssam: I need to correct the generaton of the dbf 
   tau->generate_all_conc_tag_el(ALTERNATIVE);
-
+  printf("here, passed? 1  \n");
   task::Taskset *ts = new task::Taskset(-1);
-
+  tau->_concretes()->get(0)->display();
+  printf("here, passed? 2  Size : %d \n", tau->_concretes()->_size());
   for (int t=0;t<200;t++){
-    tau->_concretes()->get(0)->dbf_exact(t,ts); 
+    tau->_concretes()->get(0)->generate_all_conc_tag_el(CONDITION); 
+    std::cout<<"("<<t<<","<<tau->_concretes()->get(0)->dbf_exact(t,ts)<<")"<<std::endl;
   }
 }

@@ -245,9 +245,9 @@ namespace analysis{
 	  if(!curr->empty)
 	    v_l->add_at_tail(new common::Node<task::Subtask *>(curr,SAVE));
         }
-        if(v_l->size){
+        if(v_l->size)
             return NULL;
-        }
+        
         switch (omit) {
             case RANDOM: {
                 std::srand(std::time(NULL));
@@ -258,9 +258,9 @@ namespace analysis{
                 return select_preemp_aware(tau);
             }
             default:
-                std::cout << "UNKNOWN OMIT....EXITTING" << '\n';
-                exit(-1);
+	      fatal_error(42, "UNKNOWN OMIT....EXITTING");
         }
+	return NULL;
     }
 
     /**

@@ -267,10 +267,8 @@ namespace code_generator {
 					common::List<task::Subtask *> * succs,
 					common::List<std::string > * semaphores){
 
-    if (succs->size!=2){
-      std::cerr<<"Fatal error: A conditional node should have only two successors"<<std::endl;
-      exit(-1);
-    }
+    if (succs->size!=2)
+      fatal_error(37," A conditional node should have only two successors");
     std::string condition_name = this->v->_label()+"_c";
     std::string to_ret = "int "+condition_name+"=10;\n";
     *fp_c <<"    "<< condition_name+"=random_between(-10,10);\n";
@@ -346,20 +344,14 @@ namespace code_generator {
   void 	Subtask_code::generate_ccondition(std::ostream* fp_h, std::ostream* fp_c,
 					  common::List<task::Subtask *> * preds){
 
-    if (preds->size!=2){
-      std::cerr<<"Fatal error: A closing conditional node should have only two predecessors"<<std::endl;
-      exit(-1);
-    }
-
+    if (preds->size!=2)
+      fatal_error(38, "A closing conditional node should have only two predecessors");
     *fp_c<< "  sem_wait(&"+v->_silent_subtask()->_label()+"_closing_sem);\n";
-    
     std::string condition_name = v->_silent_subtask()->_label()+"_c";
     *fp_c << "  if ("+condition_name+">0)\n";
     *fp_c << "    sem_wait(&"+preds->get(0)->_label()+"_"+v->_label()+"_sem);\n";
     *fp_c<<  "  else {\n";
     *fp_c << "    sem_wait(&"+preds->get(1)->_label()+"_"+v->_label()+"_sem); \n  } \n";
-    
-
   }
 
   /**
@@ -417,13 +409,11 @@ namespace code_generator {
 	    generate_mem_copy(fp_h, fp_c);
 	    break;	
 	  default:
-	    std::cerr<<"Unsupported TAG, exiting ..."<<std::endl;
-	    exit(-1);
+	    fatal_error(40,"Unsupported TAG type, exiting ...");
 	  }
 	break;
       default:
-	std::cerr<<"Unsupported node type, exiting ..."<<std::endl;
-	exit(-1);
+	fatal_error(39,"Unsupported node type, exiting ...");
       }
     generate_write_buffers(fp_h, fp_c, data_write);
     if (v->_type()!=CONDITION)

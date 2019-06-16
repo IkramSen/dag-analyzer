@@ -176,8 +176,7 @@ namespace task{
 	max_c = max_tau->preemp_index();
 	break;
       default:
-	std::cout<<"UNKNOW OPTION.. EXITTING"<<std::endl;
-	exit(-1);
+	fatal_error(35, "UNKNOW sorting option.. exiting");
       }
     
 
@@ -191,8 +190,7 @@ namespace task{
 	  ex_t = max_tau->preemp_index();
 	  break;
 	default:
-	  std::cout<<"UNKNOW OPTION.. EXITTING"<<std::endl;
-	  exit(-1);
+	  fatal_error(36, "UNKNOW sorting option.. exiting");
 	}
 	if ( ex_t> max_c){
 	  max_c  = ex_t;

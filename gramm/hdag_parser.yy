@@ -88,10 +88,9 @@ copying: "copy" "(" "identifier" "," "identifier" ")" ";"
     driver.subgraphs->insert({$3,tau});
     driver.temp_ident = new common::List<std::string>();
   }
-  else {
-    std::cerr<<"Error:"<<$5<<" Only sub-graphs are clonable, Not a Sub-graph or empty subgraph"<<std::endl;
-    exit(-1);
-  }
+  else
+    fatal_error(1,$5+" Only sub-graphs are clonable, Not a Sub-graph or empty subgraph");  
+  
 }
 
 
@@ -105,10 +104,7 @@ generating:  "generate" "(" "identifier" "," "quoted" ")" ";"
 {
   if (driver.subgraphs->count($3)>0){
     std::string s = $5;
-    s.erase(
-	    remove( s.begin(), s.end(), '\"' ),
-	    s.end()
-	    );
+    s.erase(remove( s.begin(), s.end(), '\"' ),s.end());
     (*(driver.subgraphs))[$3]->to_dot(s);
   }
   else if(driver.tasks->count($3)){
@@ -119,31 +115,22 @@ generating:  "generate" "(" "identifier" "," "quoted" ")" ";"
 	    );
     (*(driver.tasks))[$3]->to_dot(s);
   }
-  else {
-    std::cerr<<"Error: "<<$3<<" must be a  graph or a sub-graph"<<std::endl;
-    exit(-1);
-  }
+  else 
+    fatal_error(20, $3+" must be a  graph or a sub-graph");
+
 }
 
 
 graph_remp :  "identifier" "=" "{" complex_exp "}" ";"
 {
-#ifdef DEBUG
-  std::cout<<"Expression with "<< $1 <<" has been correctly recongnized"<<std::endl;
-#endif
-
-  if (driver.sgraphs->count($1)>0){
+  PRINT_DEBUG("Expression with "+ $1 +" has been correctly recongnized \n");
+  if (driver.sgraphs->count($1)>0)
     driver.subgraphs->insert({$1,driver.temp_tasks->head->el});
-  }
-  else if(driver.graphs->count($1)){
+  else if(driver.graphs->count($1))
     driver.tasks->insert({$1,driver.temp_tasks->head->el});
-  }else {
-    std::cerr<<"Error:"<<$1<<" is not a graph nor a sub-graph"<<std::endl;
-    exit(-1);
-  }
-#ifdef DEBUG
-  std::cout<<"Expression with "<< $1 <<" has been correctly  added as a graph or subgraph"<<std::endl;
-#endif
+  else
+    fatal_error(21, $1+" is not a graph nor a sub-graph");
+  PRINT_DEBUG("Expression with "+ $1 +" has been correctly  added as a graph or subgraph \n"); 
   driver.temp_tasks = new common::List<task::Task *>();
 };
 
@@ -161,10 +148,8 @@ complex_exp:
       tau->add_subtask((*(driver.subtasks))[curr]);
     else if (driver.sgraphs->count(curr)>0)
       tau->merge_task((*(driver.subgraphs))[curr]);
-    else {
-      std::cerr<<curr<<" is not a subgraph or a node, exitting "<<std::endl;
-      exit(-1);
-    }
+    else
+      fatal_error(22, curr+" is not a subgraph or a node, exitting ");
   }
   if (driver.temp_tasks->size == 0){
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
@@ -188,10 +173,8 @@ complex_exp:
       tau->add_subtask((*(driver.subtasks))[curr]);
     else if (driver.sgraphs->count(curr)>0) 
       tau->merge_task((*(driver.subgraphs))[curr]);
-    else {
-      std::cerr<<"Error : Node "<<curr<<" is must be a subtask or a subgraph"<<std::endl;
-      exit(-1);
-    }
+    else
+      fatal_error(23, curr+" is must be a subtask or a subgraph");
   }
   if (driver.temp_tasks->size == 0){     
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
@@ -206,24 +189,17 @@ complex_exp:
 
 suite: "identifier" ";"
 {
-  if (driver.temp_tasks->size == 0){
-     
+  if (driver.temp_tasks->size == 0){  
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
     task::Task * tau  = new task::Task(-1,l_);
     driver.temp_tasks->add_at_head(new common::Node<task::Task *>(tau)); 
   }
-
-  if (driver.subgraphs->count($1)>0){
+  if (driver.subgraphs->count($1)>0)
     driver.temp_tasks->tail()->el->link_task_after((*driver.subgraphs)[$1]);
-  }
-  else if (driver.subtasks->count($1)>0){
+  else if (driver.subtasks->count($1)>0)
     driver.temp_tasks->tail()->el->link_new_exit((*driver.subtasks)[$1]);
-  }
-  else {
-    std::cout<<"Error:  \""<<$1<<"\" has not been declared in this scope \n";
-
-    exit(-1);
-  }
+  else
+    fatal_error(24, $1+"\" has not been declared in this scope");
 }
 
 conditional : identifier_c "{" complex_exp_r "}" next 
@@ -265,15 +241,13 @@ subgraph_exp: "sGraph" identifiers ";"
 {
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string  curr = driver.temp_ident->get(i);
-    if (driver.sgraphs->count(curr)>0){
-      std::cerr<<"Error: Subgraph :"<<curr<<" has been already declared"<<std::endl;
-      exit(-1);
-    }
+    if (driver.sgraphs->count(curr)>0)
+      fatal_error(25,"Subgraph : \""+curr+"\" has been already declared"); 
     driver.sgraphs->insert({curr,driver.sgraphs->size()});
   }
   driver.temp_ident = new common::List<std::string>();
 }
-
+// Houssam : n'oublie pas d'ajouter la fonction print_debug 
 graph_exp:  "Graph" "identifier" parenthesis_node ";"
 {
   std::map<std::string, std::string>::iterator it;
@@ -282,82 +256,58 @@ graph_exp:  "Graph" "identifier" parenthesis_node ";"
     if (it->first.compare("T")==0){
       try {
       T=std::stoi(it->second,nullptr,10);
-	if (T < 0){
-	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter T must be a positive integer  \n";
-	  exit(-1);
-	}
+	if (T < 0)
+	  fatal_error(26, $2+"\" : The parameter T must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	std::cerr<<"Error in declaring Node \""<<$2<<"\": The parameter T must be an integer "<<std::endl;
-	exit(-1);
+	fatal_error(27, $2+"\": The parameter T must be an integer "); 
       } 
     }
     else if (it->first.compare("D")==0){
       try {
       D=std::stoi(it->second,nullptr,10);
-	if (D < 0){
-	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter D must be a positive integer  \n";
-	  exit(-1);
-	}
+	if (D < 0)
+	  fatal_error(30,"Node \""+$2+"\" : The parameter D must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	std::cerr<<"Error in declaring Node \""<<$2<<"\": The parameter D must be an integer "<<std::endl;
-	exit(-1);
+	fatal_error(9, "\""+$2+"\": The parameter D must be an integer");
       } 
     }
-    else {
-      std::cerr<<"Error in declaring Node \""<<$2<<"\": is  a unknown option "<<std::endl; 
-      exit(-1);
-    }
+    else
+      fatal_error(10,"\""+$2+"\": is  a unknown option ");
   }
-
-
-  if (D==-1 || T==-1){
-    std::cerr<<"Parameters D and T are mondatory"<<std::endl; 
-    exit(-1);
-  }
-  if (driver.graphs->count($2)>0){
-      std::cout<<"Error: Graph :"<<$2<<"has been already declared \n";
-      exit(-1);
-    }
+  if (D==-1 || T==-1)
+    fatal_error(11, "Parameters D and T are mondatory");
+  if (driver.graphs->count($2)>0)
+    fatal_error(12,"Graph :\""+$2+"\"has been already declared");
+    
   driver.graphs->insert({$2,driver.graphs->size()});
   driver.temp_couples = new std::map<std::string,std::string>();
 }
 
 condition_exp: "Condition" identifiers ";"
 {
-#ifdef DEBUG 
-    std::cout<<"*************************************************** "<<std::endl;
-#endif
+  PRINT_DEBUG("*************************************************** ");
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string curr = driver.temp_ident->get(i);
-#ifdef DEBUG 
-    std::cout<<"this is conditions: "<<curr<<std::endl;
-#endif
-    if (driver.conditions->count(curr)>0){
-      std::cout<<"Error: Condition :"<<curr<<"has been already declared \n";
-      exit(-1); 
-    }
+    PRINT_DEBUG("this is conditions: "+curr+"\n"); 
+    if (driver.conditions->count(curr)>0)
+      fatal_error(13, "Condition :\""<<curr<<"\" has been already declared");
     driver.conditions->insert({curr,driver.conditions->size()});
   }
-#ifdef DEBUG 
-    std::cout<<"*************************************************** "<<std::endl;
-#endif
+  PRINT_DEBUG( "*************************************************** \n"); 
   driver.temp_ident = new common::List<std::string>();
 }
-
 
 tagging : "Tag" identifiers ";"
 {
  
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string curr = driver.temp_ident->get(i);
-    if (driver.tags->count(curr)>0){
-      std::cout<<"Error: Tag :"<<curr<<"has been already declared \n";
-      exit(-1);
-    }
+    if (driver.tags->count(curr)>0)
+      fatal_error(14," Tag :"+curr+"has been already declared ");
     driver.tags->insert({curr,driver.tags->size()});
   }
   driver.temp_ident = new common::List<std::string>();
@@ -381,16 +331,9 @@ identifier_c : "if" "(" "identifier" ")"
   std::cout<<"this is the lane found values " << (*(driver.conditions))["lane_found_1"]<<std::endl;
   std::cout<<"This is the count : " << driver.conditions->count($3)<<"This is the test  " << (*(driver.conditions))[$3]<<std::endl;
 #endif
+  if (driver.conditions->count($3)==0)
+    fatal_error(15,"Condition :\""<<$3<<"\# has not been declared");
 
-
-  
-  // I need to check that the condition exists !!
-  if (driver.conditions->count($3)==0){
-      std::cout<<"Error: Condition :"<<$3<<" has not been declared \n";
-      exit(-1);
-    }
-  
-  // process me like I am a new Id
   task::Subtask * s = new task::Subtask(s_id,0,0,CONDITION,-1);
   s->_label($3);
   s_id++;
@@ -412,57 +355,44 @@ identifiers : "identifier"
 
 node_exp:  "Node" "identifier" parenthesis_node ";"
 {
-  /// add all tags and check that they do not exisit
-  // define the rules of a correct node 
   std::map<std::string, std::string>::iterator it;
   std::map<std::string, std::string> * properties = new std::map<std::string, std::string>();
   int C=-1, PC=0;
   std::string tag="EMPTY_TAG"; 
   for (it = driver.temp_couples->begin(); it != driver.temp_couples->end(); it++ ){
     bool tag_found= false;
-    //    checking if the tag exist
     if (it->first.compare("TAG")==0){
-      if (driver.tags->count(it->second)==0){
-	std::cerr<<"Tag "<<it->second<<" was not declared in this scope.\n";
-	exit(-1);
-      }
+      if (driver.tags->count(it->second)==0)
+	fatal_error(16,"Tag \""<<it->second<<"\" was not declared in this scope");
       tag= it->second;
       continue;
     }
     else if (it->first.compare("C")==0){
       try {
 	C=std::stoi(it->second,nullptr,10);
-	if (C < 0){
-	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The arameter C must be a positive integer  \n";
-	  exit(-1);
-	}
+	if (C < 0)
+	  fatal_error(17," \""<<$2<<"\" : The arameter C must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	std::cerr<<"Error in declaring Node \""<<$2<<"\": The parameter C must be an integer  \n";
-	exit(-1);
+	fatal_error(18, " Node \""<<$2<<"\": The parameter C must be an integer");
       }
     }
     else if (it->first.compare("PC")==0){
       try {
 	PC=std::stoi(it->second,nullptr,10);
-	if (PC < 0){
-	  std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter PC must be a positive integer  \n";
-	  exit(-1);
-	}
+	if (PC < 0)
+	  fatal_error(19," \""<<$2<<"\" : The parameter PC must be a positive integer");
 	continue;
       }
       catch (std::invalid_argument e){
-	std::cerr<<"Error in declaring Node \""<<$2<<"\" : The parameter PC must be an integer  \n";
-	exit(-1);
+	fatal_error(28," Node \""<<$2<<"\" : The parameter PC must be an integer");
       }
     }
     properties->insert({it->first,it->second});
   }
-  if (C==-1){
-    std::cout<<"Error in declaring Node \""<<$2<<"\" : The parameter C is mondatory \n";
-    exit(-1);
-  }
+  if (C==-1)
+    fatal_error(29,"Node \""<<$2<<"\" : The parameter C is mondatory");
   if (tag.compare("EMPTY_TAG")==0){
     std::cerr<<"Warning: Tag not declared for  Node \""<<$2<<"\", it will be set to default TAG \n";
   }
@@ -486,25 +416,18 @@ dnode_exp:  "dNode" "identifier" parenthesis_node ";"
     if (it->first.compare("Size")==0){
       try {
 	size=std::stoi(it->second,nullptr,10);
-	if (size < 0){
-	  std::cerr<<"Error in declaring dNode \""<<$2<<"\" : The parameter Size must be a positive integer \n";
-	  exit(-1);
-	}
+	if (size < 0)
+	  fatal_error(8,"Error in declaring dNode \""+$2+"\" : The parameter Size must be a positive integer");
       }
       catch (std::invalid_argument e){
-	std::cout<<"Error in declaring Node \""<<$2<<"\" : The parameter Size must be an integer  \n";
-	exit(-1);
+	fatal_error(31," Node \""+$2+"\" : The parameter Size must be an integer");
       }
     }
   }
-  if (properties->count("Type") == 0){
-    std::cerr<<"Error in declaring dNode \""<<$2<<"\" : The parameter Type  is mondatory \n";
-    exit(-1);
-  }
-  if (size==-1){
-    std::cerr<<"Error in declaring dNode \""<<$2<<"\" : The parameter size is mondatory \n";
-    exit(-1);
-  }
+  if (properties->count("Type") == 0)
+    fatal_error(32, "dNode \""+$2+"\" : The parameter Type  is mondatory");
+  if (size==-1)
+    fatal_error(33, "dNode \""+$2+"\" : The parameter size is mondatory");
   driver.temp_couples = new std::map<std::string,std::string>();
   driver.subtask_id++;
 };
@@ -513,57 +436,40 @@ parenthesis_node : "(" equality  ")"                    {};
 
 equality : "identifier" "=" "identifier"
 {
-  if (driver.temp_couples->count($1) > 0){
-    std::cerr<<$1<<" property has already been declared for the current element \n";
-    exit(-1);
-  }  
+  if (driver.temp_couples->count($1) > 0)
+    fatal_error(2, $1+" property has already been declared for the current element");   
   driver.temp_couples->insert({$1,$3});
 }
-| equality  ","  "identifier" "=" "identifier"          {
-  if (driver.temp_couples->count($3) > 0){
-    std::cerr<<$3<<" property has already been declared for the current element \n";
-    exit(-1);
-  }  
+| equality  ","  "identifier" "=" "identifier"
+{
+  if (driver.temp_couples->count($3) > 0)
+    fatal_error(3,$3+" property has already been declared for the current element");  
   driver.temp_couples->insert({$3,$5});
-  }
-
+}
 | "identifier" "=" "number"
 {
-  
-  if (driver.temp_couples->count($1) > 0){
-    std::cerr<<$1<<" property has already been declared for the current element 1 \n";
-    exit(-1);
-  }  
+  if (driver.temp_couples->count($1) > 0)
+    fatal_error(4, $1+" property has already been declared for the current element");
   driver.temp_couples->insert({$1,std::to_string($3)});
 }
 
-| equality  ","  "identifier" "=" "number"          {
-  
-  if (driver.temp_couples->count($3) > 0){
-    std::cerr<<$3<<" property has already been declared for the current element 2 \n";
-    exit(-1);
-  }
-   
+| equality  ","  "identifier" "=" "number"          {  
+  if (driver.temp_couples->count($3) > 0)
+    fatal_error(5,$3+" property has already been declared for the current element");     
   driver.temp_couples->insert({$3,std::to_string($5)});
   }
 | "identifier" "=" "quoted"
 {
-  
-  if (driver.temp_couples->count($1) > 0){
-    std::cerr<<$1<<" property has already been declared for the current element 1 \n";
-    exit(-1);
-  }
+  if (driver.temp_couples->count($1) > 0)
+    fatal_error(6,$1+" property has already been declared for the current element");
   driver.temp_couples->insert({$1,$3});
 }
-
-| equality  ","  "identifier" "=" "quoted"          {
-  if (driver.temp_couples->count($3) > 0){
-    std::cerr<<$3<<" property has already been declared for the current element 2 \n";
-    exit(-1);
-  }
-   
+| equality  ","  "identifier" "=" "quoted"
+{
+  if (driver.temp_couples->count($3) > 0)
+    fatal_error(7,$3+" property has already been declared for the current element");  
   driver.temp_couples->insert({$3,$5});
-  }
+}
 
 %%
 void

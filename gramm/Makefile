@@ -1,6 +1,6 @@
 all: main.out
-main.out: hdag_driver.o hdag_parser.o hdag_scanner.o ../task/buffer.o ../task/taskset.o ../task/comm.o ../common/list.o ../task/subtask.o ../task/task.o  main.o
-	g++ -o main.out hdag_driver.o hdag_parser.o ../task/buffer.o ../task/taskset.o ../task/comm.o hdag_scanner.o main.o ../task/subtask.o ../task/task.o ../common/list.o 
+main.out: hdag_driver.o hdag_parser.o hdag_scanner.o ../task/buffer.o ../task/taskset.o ../task/comm.o ../common/list.o ../common/common.o ../task/subtask.o ../task/task.o  main.o
+	g++ -o main.out hdag_driver.o hdag_parser.o ../task/buffer.o ../task/taskset.o ../task/comm.o hdag_scanner.o main.o ../task/subtask.o ../task/task.o ../common/list.o ../common/common.o
 hdag_parser.o: hdag_parser.cc hdag_parser.hh hdag_driver.hh
 	g++ -c hdag_parser.cc
 hdag_parser.cc hdag_parser.hh: hdag_parser.yy
@@ -9,6 +9,8 @@ hdag_scanner.o: hdag_scanner.cc hdag_parser.hh hdag_driver.hh
 	g++ -c hdag_scanner.cc
 list.o: ../common/list.hpp
 	g++ -c ../common/list.hpp
+list.o: ../common/common.cpp
+	g++ -c ../common/common.cpp
 comm.o: ../task/comm.cpp
 	g++ -c ../task/comm.cpp
 buffer.o: ../task/buffer.cpp
