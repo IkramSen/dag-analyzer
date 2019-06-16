@@ -26,9 +26,9 @@ using a single thread, characterized by :
 
 Each task definition is considered as a Graph, task **tau** can be defined as follows:
 
-	'''c
-	Graph tau(T=50,D=40);	
-	'''
+'''c
+Graph tau(T=50,D=40);	
+'''
 
 In this example, we define task tau, with a period of 50ms, and a deadline of 40ms.  
 To define the task execution time, and preemption cost we define * Compute Nodes * as follows : 
