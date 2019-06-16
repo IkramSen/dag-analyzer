@@ -1,7 +1,6 @@
 # HPC-DAG Grammar:
 Auteur : Houssam-Eddine Zahaf
 
-# Tool description : 
 
 This part of the HPC DAG Analyzer aims to provide a grammar to
 describe the hardware architecture and the software stack using the
