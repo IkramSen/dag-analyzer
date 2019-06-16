@@ -92,7 +92,7 @@ parallel threads **p1** and **p2** to join back a sequential thread
 Such a graph can be described using our grammar as following: 
 
 
-```c
+```c++
 Tag CPU, GPU;
 Node seq1(C=4, TAG=CPU);
 Node p1(C=4,PC=3,TAG=GPU);
@@ -129,3 +129,28 @@ After the task declaration block, the **generate** keyword allows to
  "/tmp/gr.dot" in **GraphViz** (dot) format.
  
  
+
+ 
+### Sgraph
+ 
+ copy
+ locks 
+ 
+ Usually in a complex real-time task, such those found in autonomous
+ driving, several functionalities are used at different places in the
+ software design. Our grammar provides the necessary tools for such
+ repetitive software modules, by the mean of **sGraph**s and the copy
+ operation.
+
+
+##  Shared buffers
+ 
+### conditions 
+### alternatives 
+ 
+ 
+### multiperiodics 
+ 
+ 
+ 
+### modular programming
