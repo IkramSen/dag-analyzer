@@ -260,9 +260,10 @@ Condition C;
 .....
 
 if (C) {
-p1; 
-} else {
-p2; 
+  p1; 
+} 
+else {
+  p2; 
 }
 ```
 
