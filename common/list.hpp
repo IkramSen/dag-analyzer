@@ -188,18 +188,18 @@ namespace common {
      * @param e the Node we want to add 
      */
     void add_at_tail(Node<Data > *e) {
-      PRINT_DEBUG("Adding to tail called\n");
+      PRINT_DEBUG("add_at_tail begin"); 
       if (!head){
-	PRINT_DEBUG("The list is empty \n");
+	PRINT_DEBUG("The list is empty");
 	head=e;
       }else {
-	PRINT_DEBUG("The list is empty \n");
+	PRINT_DEBUG("The list is not empty");
         Node<Data> *last = tail();
         last->next = e;
 	e->next= NULL;
       }
       size++;
-      PRINT_DEBUG("finishing add_at_tail call \n");
+      PRINT_DEBUG("add_at_tail exit \n");
     }
 
 

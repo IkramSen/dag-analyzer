@@ -5,7 +5,7 @@ Node cc(TAG=GPU, BAG=KPU,C=6);
 Node ff(TAG=GPU, BAG=KPU,C=6);
 Condition c;
 sGraph g;
-Graph k(T=50,D=40,T=30);
+Graph k(T=50,D=40);
 g={
  dd;
 bb;

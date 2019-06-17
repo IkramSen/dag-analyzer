@@ -130,27 +130,94 @@ After the task declaration block, the **generate** keyword allows to
  
  
 
+
  
-### Sgraph
+### Conditional task behavior: *conditions* 
+### Alternative execution patterns: *alternatives* 
  
- copy
- locks 
  
- Usually in a complex real-time task, such those found in autonomous
- driving, several functionalities are used at different places in the
- software design. Our grammar provides the necessary tools for such
- repetitive software modules, by the mean of **sGraph**s and the copy
- operation.
+  
+#### Repetitive graph structures : sDraph-s and copies
+
+ Usually in a complex real-time task, such as those found in
+ autonomous driving, several functionalities are used at different
+ places in the software design. Our grammar provides the necessary
+ tools for such repetitive software modules, by the mean of
+ **sGraph**s.
+ 
+ An **sGraph** is a software module (combination of nodes) that may be
+ repeated at several places. It is defined in a similar way as a task
+ (Graph). Therefore, it uses all structure definition keywords and
+ mechanisms. However, it does not have a period, nor a deadline.
+ 
+A software module can be reused using **copy** operation. A **copy**
+operation allows copying the same sub graph structure between two or
+more subgraphs. The first operad (**sGraph**) should be the source
+subgraphs, and all the rest **sGraphs**s are destination
+nodes. Further, each subgraph can be used in the same, or in different
+tasks. Here is an example of the use of keywords **sGraph** and
+**copy**.
+
+```c++
+Tag CPU, GPU;
+Node seq1(C=4, TAG=CPU);
+Node p1(C=3,PC=3,TAG=GPU);
+Node p2(C=2, TAG=CPU);
+Node p3(C=1, TAG=CPU);
+
+Node seq2(C=1, TAG=CPU);
+
+sGraph s1, s2, s3;
+
+s1={
+  p1;
+  par(p2,p3);
+};
+
+copy(s1,s2);
+copy(s1,s3);
+Graph tau(T=50,D=40);
+
+tau={
+  seq1;
+  par(s1,s2,s3);
+  seq2;
+};
+
+generate(tau,"/tmp/gr.dot");
+```
 
 
-##  Shared buffers
- 
-### conditions 
-### alternatives 
- 
- 
-### multiperiodics 
- 
- 
- 
-### modular programming
+
+
+
+
+
+#### Data sharing: *locks and buffers*
+
+
+
+### modular programming: *include* 
+
+
+
+
+## multiperiodic real-time tasks 
+
+In several real-time contextes, a tasks may be compound of a different
+nodes having different timing behavior, i.e. they can have different
+periods and deadlines. Our description language supports such behavior
+by allowing to describe to node level, deadlines and periods, and by
+omitting them in the task description. However, the tasks description
+file must start with **MULTIPERIODIC MODULE** keyword.
+
+
+## The digraph real-time tasks 
+
+
+In a more complex scenario, subtasks may communicate with their direct
+and indirect predecessors. This, functionality is automatiqually
+supported in a similar way as the multiperiodic real-time
+task. However, the semantics of communications is different. This mode
+is not fully supported yet by the other componnents such as the
+real-time analyzer and code generator. 

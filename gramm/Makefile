@@ -9,7 +9,7 @@ hdag_scanner.o: hdag_scanner.cc hdag_parser.hh hdag_driver.hh
 	g++ -c hdag_scanner.cc
 list.o: ../common/list.hpp
 	g++ -c ../common/list.hpp
-list.o: ../common/common.cpp
+common.o: ../common/common.cpp
 	g++ -c ../common/common.cpp
 comm.o: ../task/comm.cpp
 	g++ -c ../task/comm.cpp

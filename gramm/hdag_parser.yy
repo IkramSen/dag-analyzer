@@ -10,7 +10,7 @@
 {
 # include <string>
   class hdag_driver;
- 
+
  
 }
 // The parsing context.
@@ -28,7 +28,6 @@
 # include "hdag_driver.hh"
  int s_id = 0;
  bool forget =false;
- //#define DEBUG 
 }
 %define api.token.prefix {TOK_}
 
@@ -82,15 +81,18 @@ commenting: "comment" {printf("j'ai trouvé un cmme \n");}
 
 copying: "copy" "(" "identifier" "," "identifier" ")" ";"
 {
-  if (driver.subgraphs->count($5)>0){
-    task::Task * tau = (*(driver.subgraphs))[$5]->copy_partial(s_id);
+  PRINT_DEBUG("Copy operation recognized between "+$3+" and "+$5);
+  if (!driver.subgraphs->count($3)>0)
+    fatal_error(31,"In copying "+$3+ " : Copy operation is reserved to sub graphs only. ");
+  if (driver.sgraphs->count($5)>0){
+    task::Task * tau = (*(driver.subgraphs))[$3]->copy_partial(s_id);
     s_id+=tau->_subtasks()->size;
-    driver.subgraphs->insert({$3,tau});
-    driver.temp_ident = new common::List<std::string>();
+    driver.subgraphs->insert({$5,tau});
   }
   else
-    fatal_error(1,$5+" Only sub-graphs are clonable, Not a Sub-graph or empty subgraph");  
-  
+    fatal_error(1,"In copying "+$5+ " : Copy operation is reserved to sub graphs only. ");
+
+  PRINT_DEBUG("Ending of the copy operation"); 
 }
 
 
@@ -123,33 +125,45 @@ generating:  "generate" "(" "identifier" "," "quoted" ")" ";"
 
 graph_remp :  "identifier" "=" "{" complex_exp "}" ";"
 {
-  PRINT_DEBUG("Expression with "+ $1 +" has been correctly recongnized \n");
+  
+  PRINT_DEBUG("Expression of  "+ $1 +" has been correctly recongnized \n");
   if (driver.sgraphs->count($1)>0)
     driver.subgraphs->insert({$1,driver.temp_tasks->head->el});
   else if(driver.graphs->count($1))
     driver.tasks->insert({$1,driver.temp_tasks->head->el});
   else
     fatal_error(21, $1+" is not a graph nor a sub-graph");
-  PRINT_DEBUG("Expression with "+ $1 +" has been correctly  added as a graph or subgraph \n"); 
+  PRINT_DEBUG("Expression with "+ $1 +" has been correctly  added \n");
   driver.temp_tasks = new common::List<task::Task *>();
 };
 
 complex_exp:
 %empty
 |complex_exp suite
+{
+  PRINT_DEBUG("SUITE reconignzed");
+}
 |complex_exp  conditional
+{
+  PRINT_DEBUG("CONDITIAL reconignzed");
+}
 |complex_exp "par" "(" identifiers ")" ";"
 {
+  PRINT_DEBUG("par  reconignzed");
   common::List<task::Subtask *> * l = new common::List<task::Subtask *> ();
-  task::Task * tau = new task::Task(-1,l);
+  task::Task * tau = new task::Task(111,l);
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string curr =  driver.temp_ident->get(i);
     if (driver.subtasks->count(curr)>0)
       tau->add_subtask((*(driver.subtasks))[curr]);
     else if (driver.sgraphs->count(curr)>0)
-      tau->merge_task((*(driver.subgraphs))[curr]);
+      {
+	if ((*(driver.subgraphs))[curr]==NULL)
+	  fatal_error(41,curr+ " Subgraph is empty \n"); 
+	tau->merge_task((*(driver.subgraphs))[curr]);
+      }
     else
-      fatal_error(22, curr+" is not a subgraph or a node, exitting ");
+      fatal_error(22, curr+" must be  a subgraph or a node, exitting "); 
   }
   if (driver.temp_tasks->size == 0){
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
@@ -157,11 +171,12 @@ complex_exp:
     driver.temp_tasks->add_at_head(new common::Node<task::Task *>(tau)); 
   }
   driver.temp_tasks->tail()->el->link_task_after(tau);
-
-
+  driver.temp_ident = new common::List<std::string>();
+  PRINT_DEBUG("par  end");
 }
 |complex_exp "alta" "(" identifiers ")" ";"
 {
+  PRINT_DEBUG("alta  reconignzed");
   task::Subtask *s = new task::Subtask(s_id,0,0,ALTERNATIVE,-1);
   s->_label("ALT"+std::to_string(s_id));
   s_id ++;
@@ -185,10 +200,9 @@ complex_exp:
   driver.temp_tasks->tail()->el->link_task_after(tau);
 }
 
-
-
 suite: "identifier" ";"
 {
+   PRINT_DEBUG("identifier  reconignzed");
   if (driver.temp_tasks->size == 0){  
     common::List<task::Subtask  *> * l_ = new common::List<task::Subtask  *> ();
     task::Task * tau  = new task::Task(-1,l_);
@@ -200,6 +214,7 @@ suite: "identifier" ";"
     driver.temp_tasks->tail()->el->link_new_exit((*driver.subtasks)[$1]);
   else
     fatal_error(24, $1+"\" has not been declared in this scope");
+  PRINT_DEBUG("identifier  process end");
 }
 
 conditional : identifier_c "{" complex_exp_r "}" next 
@@ -241,10 +256,11 @@ subgraph_exp: "sGraph" identifiers ";"
 {
   for (int i=0;i<driver.temp_ident->size;i++){
     std::string  curr = driver.temp_ident->get(i);
-    if (driver.sgraphs->count(curr)>0)
+     if (driver.sgraphs->count(curr)>0)
       fatal_error(25,"Subgraph : \""+curr+"\" has been already declared"); 
     driver.sgraphs->insert({curr,driver.sgraphs->size()});
   }
+
   driver.temp_ident = new common::List<std::string>();
 }
 // Houssam : n'oublie pas d'ajouter la fonction print_debug 
@@ -285,6 +301,10 @@ graph_exp:  "Graph" "identifier" parenthesis_node ";"
     
   driver.graphs->insert({$2,driver.graphs->size()});
   driver.temp_couples = new std::map<std::string,std::string>();
+
+
+  PRINT_DEBUG("The task "+$2+" Declaration end");
+
 }
 
 condition_exp: "Condition" identifiers ";"
@@ -332,7 +352,7 @@ identifier_c : "if" "(" "identifier" ")"
   std::cout<<"This is the count : " << driver.conditions->count($3)<<"This is the test  " << (*(driver.conditions))[$3]<<std::endl;
 #endif
   if (driver.conditions->count($3)==0)
-    fatal_error(15,"Condition :\""+$3+"\# has not been declared");
+    fatal_error(15,"Condition :\""+$3+"\" has not been declared");
 
   task::Subtask * s = new task::Subtask(s_id,0,0,CONDITION,-1);
   s->_label($3);

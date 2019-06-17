@@ -123,7 +123,7 @@ namespace task {
    * @return a reference to the new task object 
    */  
   Task * Task::copy_partial(){
-   
+    PRINT_DEBUG("COPY PARTIAL begin : No PARAM\n");
     common::List<Subtask *> *l = new common::List<Subtask *> ();
     for (int i=0;i<subtasks->size;i++){
       common::Node<Subtask *> *curr = subtasks->_get(i);
@@ -151,7 +151,7 @@ namespace task {
    * @return a reference to the new task object
    */
   Task * Task::copy_partial(int s_id){
-
+    PRINT_DEBUG("COPY PARTIAL begin : INT PARAM\n");
     common::List<Subtask *> *l = new common::List<Subtask *> ();
     for (int i=0;i<subtasks->size;i++){
       common::Node<Subtask *> *curr = subtasks->_get(i);
@@ -164,10 +164,9 @@ namespace task {
     }
     Task * tau = new Task(-1,l);
     for (int i=0;i<subtasks->size;i++)
-      {
 	for (int j=0;j<subtasks->size;j++)
 	  tau->_graph()[i][j]=graph[i][j]; 
-      }
+      
     return tau;
   }
   
@@ -462,18 +461,26 @@ namespace task {
    * @param tau The task to merge
    */
   void Task::merge_task(Task * tau){
+    if (tau==NULL){
+      PRINT_WARNING("Merging with an empty task ");
+      return;
+    }
+    PRINT_DEBUG("Merge_task begin ");
     int ** graph_2 = (int **)malloc((subtasks->size + tau->subtasks->size) * sizeof(int *));
     for (int i=0; i<subtasks->size + tau->subtasks->size; i++)
       graph_2[i] = (int *)malloc((subtasks->size + tau->subtasks->size) * sizeof(int));
+
+    for (int i=0; i<subtasks->size + tau->subtasks->size; i++)
+      for (int j=0;j<subtasks->size + tau->subtasks->size;j++)
+	graph_2[i][j] = 0; 
     for (int i=0;i<subtasks->size;i++)
       for (int j=0;j<subtasks->size;j++)
 	graph_2[i][j] = graph[i][j];
     graph = graph_2;
-    int shift = subtasks->size;
+    int shift = subtasks->size;    
     for (int i=0;i<tau->subtasks->size;i++)
       for (int j=0;j<tau->subtasks->size;j++)
 	graph[i+shift][j+shift] = tau->graph[i][j];
-    // connext two subtasks
     if (subtasks->size == 0)
       subtasks->head = tau->subtasks->head;
     else 
@@ -481,6 +488,7 @@ namespace task {
     subtasks->size +=tau->subtasks->size;
     for (int i=0;i<tau->subtasks->size;i++)
       tau->_subtasks()->_get(i)->t_id += shift;
+    PRINT_DEBUG("Merge_task end ");
   }
 
 
@@ -490,12 +498,14 @@ namespace task {
    * @param tau The task to add at the end
    */
   void Task::link_task_after(Task * tau ){
+    PRINT_DEBUG("link_task_after begin");
     common::List<Subtask *> * entries = tau->list_entries();
-    common::List<Subtask *> * exits = list_exits();
+    common::List<Subtask *> * exits = list_exits();    
     merge_task(tau);
     for (int i=0;i<entries->size;i++)
       for (int j=0;j<exits->size;j++)
-	link_two_subtasks(exits->_get(j),subtasks->find_element(entries->get(i)));
+	link_two_subtasks(subtasks->find_element(exits->get(j)),subtasks->find_element(entries->get(i)));
+    PRINT_DEBUG("link_task_after end");
   }
 
   

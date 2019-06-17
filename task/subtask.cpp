@@ -70,7 +70,7 @@ namespace task {
    * Displays the current subtask 
    */
   void Subtask::display(){
-    std::cout<<"[ID:"<<id<<"-"<<label<<" ,C:"<<C<<", PC:"<<PC<<", type:"<<type<<", TAG:"<<TAG<<"]"<<std::endl;
+    std::cout<<"[ID:"<<id<<" LABEL:"<<label<<" ,C:"<<C<<", PC:"<<PC<<", type:"<<type<<", TAG:"<<TAG<<"]"<<std::endl;
   }
 
   /** 

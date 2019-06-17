@@ -8,6 +8,6 @@
 //#define DEBUG
 
 void  PRINT_DEBUG(std::string str);
-
+void PRINT_WARNING(std::string str);
 void fatal_error(int ErrorCode, std::string Message);
 #endif
