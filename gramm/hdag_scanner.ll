@@ -51,6 +51,7 @@ blank [ \t]
 "Condition"  return yy::hdag_parser::make_CONDITION(loc);
 "lock"       return yy::hdag_parser::make_LOCK(loc);
 "copy"       return yy::hdag_parser::make_COPY(loc);
+"share"       return yy::hdag_parser::make_SHARE(loc);
 "Lock"       return yy::hdag_parser::make_LOCKV(loc);
 ";"          return yy::hdag_parser::make_LEND(loc);
 "="          return yy::hdag_parser::make_EQUAL(loc);

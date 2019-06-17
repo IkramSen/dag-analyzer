@@ -19,9 +19,10 @@ hdag_driver::hdag_driver ()
   subgraphs_names = new common::List<std::string>();
   tasks_names = new common::List<std::string>();
   subtask_id=0;
+  buffers= new std::map<std::string, task::Buffer *>();
 }
 
-hdag_driver::~hdag_driver () {
+hdag_driver::~hdag_driver(){
 }
 
 int hdag_driver::parse (const std::string &f) {
@@ -38,7 +39,6 @@ void hdag_driver::error (const yy::location& l, const std::string& m){
   std::cerr << l << ": " << m << std::endl;
 }
 
-void hdag_driver::error (const std::string& m)
-{
+void hdag_driver::error (const std::string& m){
   std::cerr << m << std::endl;
 }

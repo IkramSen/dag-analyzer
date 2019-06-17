@@ -7,6 +7,7 @@
 #include "../common/common.hpp"
 #include "../task/subtask.hpp"
 #include "../task/task.hpp"
+#include "../task/buffer.hpp"
 
 // Tell Flex the lexer's prototype ...
 # define YY_DECL \
@@ -31,6 +32,8 @@ public:
 
   std::map<std::string, task::Task *> * subgraphs;
   std::map<std::string, task::Task *> * tasks;
+
+  std::map<std::string, task::Buffer *> * buffers;
 
   common::List<task::Task * > * temp_tasks;
   common::List<std::string> * subgraphs_names;

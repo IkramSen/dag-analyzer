@@ -8,6 +8,7 @@ Node seq2(C=1, TAG=CPU);
 
 sGraph s1, s2, s3;
 
+dNode buff_1(Type="int", Size= 10);
 s1={
   p1;
   par(p2,p3);
@@ -22,5 +23,7 @@ tau={
   par(s1,s2,s3);
   seq2;
 };
+
+
 
 generate(tau,"/tmp/gr.dot");

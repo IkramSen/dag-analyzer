@@ -217,6 +217,7 @@ patterns between two or more tasks by the mean of two keywords
 **dNode** allows to define the a shared buffer. Therefore it is
 characterized by its type, name and size. Here is an example:
 
+// Houssam : I need to check this 
 ```c++
 dNode buff(type="int", size=15);
 ```
@@ -238,6 +239,37 @@ the full example can be found in the examples folder under the name
 *examples/sgraphs.c*.
 
 ### Conditional task behavior: *conditions* 
+
+
+In complex real-time task may evaluate online conditions, so to
+execute a given subtask or another. These conditional behavior have to
+be specified in the task modelization to allow tight evaluation of the
+workload and hence to study precisely the schedulabilty using typical
+**if-then-else** control structures. 
+
+For each **if-then-else** the user must define the condition that it
+needs to be evaluated by the mean of keywork **Condition**.
+
+
+For example if according to condition **C**, we may either execute
+subtask **p1** or subtask **p2**. as in the following example
+
+
+```c++
+Condition C; 
+.....
+
+if (C) {
+p1; 
+} else {
+p2; 
+}
+```
+
+The conditional node declaration must be done out of the task
+structure description, however the **if-then-else** structure it self,
+must be used inside the subtask code as it is mentionned in the
+example *examples/conditional.c*. 
 
 
 ### Alternative execution patterns: *alternatives* 

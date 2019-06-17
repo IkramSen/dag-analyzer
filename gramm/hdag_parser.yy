@@ -54,6 +54,8 @@
 %token LEND ";"
 %token EQUAL "="
 %token COMMENT "comment"
+%token SHARE "share"
+
 
 %token <std::string> QUOTED "quoted"
 %token <std::string> IDENTIFIER "identifier"
@@ -75,6 +77,7 @@ unit:
 |unit tagging
 |unit generating
 |unit commenting
+|unit sharing
 ;
 
 commenting: "comment" {printf("j'ai trouvé un cmme \n");}
@@ -96,9 +99,18 @@ copying: "copy" "(" "identifier" "," "identifier" ")" ";"
 }
 
 
+sharing: "share" "(" "identifier" "," "identifier" , "identifier" ")" ";"
+{
+
+  // Houssam : I need to do the processing here of sharing !!
+  // find the task, buffer, and subtasks
+  //  add the communication to the task 
+}
+
+
 ending: "End"
 {
-  std::cout<<"Input file was parsed succefully \n";
+  std::cout<<"Processing finished"<<std::endl;
   return 0;
 }
 
@@ -428,10 +440,9 @@ node_exp:  "Node" "identifier" parenthesis_node ";"
 dnode_exp:  "dNode" "identifier" parenthesis_node ";"
 {
   std::map<std::string, std::string>::iterator it;
-  std::map<std::string, std::string> * properties = new std::map<std::string, std::string>();
   int size = -1;
+  std::string type="type";
   for (it = driver.temp_couples->begin(); it != driver.temp_couples->end(); it++ ){
-    properties->insert({it->first,it->second});
     if (it->first.compare("Size")==0){
       try {
 	size=std::stoi(it->second,nullptr,10);
@@ -442,11 +453,19 @@ dnode_exp:  "dNode" "identifier" parenthesis_node ";"
 	fatal_error(31," Node \""+$2+"\" : The parameter Size must be an integer");
       }
     }
+    else   if (it->first.compare("Type")==0)
+      type=it->second;
+    else
+      fatal_error(42,"dNodes support only Type and Size attributes");
   }
-  if (properties->count("Type") == 0)
+  if (type.compare("type") == 0)
     fatal_error(32, "dNode \""+$2+"\" : The parameter Type  is mondatory");
   if (size==-1)
     fatal_error(33, "dNode \""+$2+"\" : The parameter size is mondatory");
+
+
+  task::Buffer *b = new task::Buffer($2,type,size);
+  driver.buffers->insert({$2,b});
   driver.temp_couples = new std::map<std::string,std::string>();
   driver.subtask_id++;
 };
