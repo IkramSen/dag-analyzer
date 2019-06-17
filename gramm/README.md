@@ -71,7 +71,7 @@ the tool. In contrast to the other optional properties, he execution
 time property is mondatory, and an error is generated and compilation
 will be aborted if not available.
 
-
+The full example can be found in *examples/simple_1.c*.
 
 ### A parallel task example using directed acyclic graphs (examples/fork_join.c)
 
@@ -130,14 +130,12 @@ After the task declaration block, the **generate** keyword allows to
  
  
 
-
- 
-### Conditional task behavior: *conditions* 
-### Alternative execution patterns: *alternatives* 
+the full example can be found in the examples folder under the name
+*examples/fork_join.c*.
  
  
   
-#### Repetitive graph structures : sDraph-s and copies
+### Repetitive graph structures : sDraph-s and copies
 
  Usually in a complex real-time task, such as those found in
  autonomous driving, several functionalities are used at different
@@ -207,10 +205,46 @@ following graph structure.
 
 <div style="text-align:center"><img src="figs/sgraphs.png" /></div>
 
-#### Data sharing: *locks and buffers*
+
+### Data sharing: *locks and buffers*
+
+The precedance constraints between two real-time subtasks is the
+consequence of a data sharing. The data sharing can be implicite, or
+explicite. Our language allows to explicitly specify communication
+patterns between two or more tasks by the mean of two keywords
+**dNode**, **share**.
+
+**dNode** allows to define the a shared buffer. Therefore it is
+characterized by its type, name and size. Here is an example:
+
+```c++
+dNode buff();
+```
+
+Further, a **dNode** can be shared between several
+subtasks. Logically, the shared buffers must be defined between
+subtask and their precedessor and their successor. Our language does
+not explicitly force such constraint and let the semantic on the
+charge of the plaform user. for example to share data between **p1**
+and **p2** and **seq2** of the example of the previous section, we can
+use **dNode buff** as follows : 
 
 
-### modular programming: *include* 
+```c++
+dNode buff();
+```
+
+the full example can be found in the examples folder under the name
+*examples/sgraphs.c*.
+
+### Conditional task behavior: *conditions* 
+
+
+### Alternative execution patterns: *alternatives* 
+ 
+
+
+## modular programming: *include* 
 
 
 
