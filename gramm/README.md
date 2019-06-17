@@ -187,14 +187,27 @@ tau={
 generate(tau,"/tmp/gr.dot");
 ```
 
+In the example above, we first define three nodes **p1**, **p2** and
+**p3**. Further, we define $s1$ as floows: **p1** than parallel
+section compound of **p2** and **p3**. Further, we copy **s1** to
+**s2** and to **s3**. Therefore, **s2** and **s3** have the same
+structure as **s1**: the same number of nodes and the same edges
+between nodes (**s1** and **s2** are isomorphe graphs). Each node of
+**s1** has an equivalent node in **s2** having the same
+characteristics.
+
+Further, **tau** is defined as node **seq1** forking parallel threads
+to **s1**, **s2** and **s3**. Hence, **seq1** is connected to each of
+**p1** and each of its copies found is **s2** and **s3**, and each
+equivalent of **p2** and **p3** are connected to the second sequential
+section **seq2**. The example described above than leads to the
+following graph structure.
 
 
 
-
-
+<div style="text-align:center"><img src="figs/sgraphs.png" /></div>
 
 #### Data sharing: *locks and buffers*
-
 
 
 ### modular programming: *include* 
