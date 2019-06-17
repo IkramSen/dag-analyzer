@@ -218,7 +218,7 @@ patterns between two or more tasks by the mean of two keywords
 characterized by its type, name and size. Here is an example:
 
 ```c++
-dNode buff();
+dNode buff(type="int", size=15);
 ```
 
 Further, a **dNode** can be shared between several
@@ -231,7 +231,7 @@ use **dNode buff** as follows :
 
 
 ```c++
-dNode buff();
+share(buff,p1,p2);
 ```
 
 the full example can be found in the examples folder under the name
