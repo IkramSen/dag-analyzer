@@ -313,7 +313,7 @@ onwared on **p1** or to test condition **B**. It may further
 continue on one of both sides of the conditions.  The resulted
 graph from the example is as follows: 
 
-<div style="text-align:center"><img src="figs/sgraphs.png" /></div>
+<div style="text-align:center"><img src="figs/conditional.png" /></div>
 
 This example can be found in  *examples/conditional.c*. 
 
