@@ -28,6 +28,7 @@
 # include "hdag_driver.hh"
  int s_id = 0;
  bool forget =false;
+ common::List<task::Subtask *> *last_cond = new common::List<task::Subtask *>();
 }
 %define api.token.prefix {TOK_}
 
@@ -99,7 +100,7 @@ copying: "copy" "(" "identifier" "," "identifier" ")" ";"
 }
 
 
-sharing: "share" "(" "identifier" "," "identifier" , "identifier" ")" ";"
+sharing: "share" "(" "identifier" "," "identifier" "," "identifier" ")" ";"
 {
 
   // Houssam : I need to do the processing here of sharing !!
@@ -233,7 +234,6 @@ conditional : identifier_c "{" complex_exp_r "}" next
 {
 
   if (driver.temp_tasks->tail()->el->_subtasks()->size==0){
-  
     task::Subtask * s = new task::Subtask(s_id,0,0,DUMMY,-1);
     s->_label("dummy_"+std::to_string(s_id));
     s_id++;
@@ -247,6 +247,18 @@ conditional : identifier_c "{" complex_exp_r "}" next
 
  
   driver.temp_tasks->before_tail()->el->link_task_after_subtask(driver.temp_tasks->tail()->el, s->el );
+  // do not forget to set thaat this is the closing one 
+  task::Subtask *s_e = new task::Subtask(s_id,0,0,CCONDITION,-1);
+
+
+  s_e->_label(last_cond->tail()->el->_label()+"_c");
+  s_e->_silent_subtask(last_cond->tail()->el);
+  last_cond->remove(last_cond->tail()->el);
+
+
+  
+  
+  driver.temp_tasks->before_tail()->el->link_new_exit(s_e);
   driver.temp_tasks->remove(driver.temp_tasks->tail()->el);
 
   
@@ -368,6 +380,7 @@ identifier_c : "if" "(" "identifier" ")"
 
   task::Subtask * s = new task::Subtask(s_id,0,0,CONDITION,-1);
   s->_label($3);
+  last_cond->add(s);
   s_id++;
   driver.temp_tasks->tail()->el->link_new_exit(s);
   

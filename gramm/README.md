@@ -269,8 +269,54 @@ else {
 
 The conditional node declaration must be done out of the task
 structure description, however the **if-then-else** structure it self,
-must be used inside the subtask code as it is mentionned in the
-example *examples/conditional.c*. 
+must be used inside the subtask code. Here is a complete example: 
+
+```c++
+Tag CPU, GPU;
+Node seq1(C=4, TAG=CPU);
+Node p1(C=3,PC=3,TAG=GPU);
+Node p2(C=2, TAG=CPU);
+Node p6(C=2, TAG=CPU);
+Node p7(C=2, TAG=CPU);
+Node p3(C=1, TAG=CPU);
+Node p4(C=1, TAG=CPU);
+Node p5(C=1, TAG=CPU);
+Node seq2(C=1, TAG=CPU);
+
+
+Condition C,B; 
+
+Graph tau(T=50,D=40);
+
+tau={
+  seq1;
+  if (C){
+    p1;
+    par(p2,p3);
+    p5;
+  }else {
+    if(B){
+      p6;
+    }
+    else {
+      p7;
+    }
+    p4;
+  }
+  seq2;
+};
+
+generate(tau,"/tmp/gr.dot");
+```
+The example above tests first condition C to either continue
+onwared on **p1** or to test condition **B**. It may further
+continue on one of both sides of the conditions.  The resulted
+graph from the example is as follows: 
+
+<div style="text-align:center"><img src="figs/sgraphs.png" /></div>
+
+This example can be found in  *examples/conditional.c*. 
+
 
 
 ### Alternative execution patterns: *alternatives* 
