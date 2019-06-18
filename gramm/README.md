@@ -53,7 +53,7 @@ This is equivalent of defining a periodic Liu and Layland task, having
 a period of 50 ms, a deadline of 40 ms, and worst case execution time
 of 4 ms.
 
-Further, the preemption cost may be defined using the keyword *PC* in
+Further, the preemption cost may be defined using the tokken *PC* in
 the node declaration, as well as the task TAG is a heterogeneous
 architecture is considered. For example:
 
@@ -116,7 +116,7 @@ we describe each thread/functionality as in the previous example.
 Further, we describe the task behavior and composition, therefore the
 subtasks are ordered according to their appearance/calling order in
 the task structure description block. Thus, the graph **tau** starts
-by seq1. Further, we find the keyword **par**, therefore all nodes
+by seq1. Further, we find the primitive **par**, therefore all nodes
 between the parenthesis after par are supposed to be executed in
 parallel. Therefore, **p1** and **p2** can be executed in parallel
 after **seq1** has finished its execution. At the end of the execution
@@ -124,7 +124,7 @@ of both **p1** and **p2**, the execution continues onward by executing
 *seq2*. **par** operation is not only binary, it can take several
 nodes (more than one).
 
-After the task declaration block, the **generate** keyword allows to
+After the task declaration block, the **generate** primitive allows to
  visualize the graph structure of task **tau**, and print it in
  "/tmp/gr.dot" in **GraphViz** (dot) format.
  
@@ -145,7 +145,7 @@ the full example can be found in the examples folder under the name
  
  An **sGraph** is a software module (combination of nodes) that may be
  repeated at several places. It is defined in a similar way as a task
- (Graph). Therefore, it uses all structure definition keywords and
+ (Graph). Therefore, it uses all structure definition primitives and
  mechanisms. However, it does not have a period, nor a deadline.
  
 A software module can be reused using **copy** operation. A **copy**
@@ -153,8 +153,7 @@ operation allows copying the same sub graph structure between two or
 more subgraphs. The first operad (**sGraph**) should be the source
 subgraphs, and all the rest **sGraphs**s are destination
 nodes. Further, each subgraph can be used in the same, or in different
-tasks. Here is an example of the use of keywords **sGraph** and
-**copy**.
+tasks. Here is an example of the use of token **sGraph** and **copy**.
 
 ```c++
 Tag CPU, GPU;
@@ -211,8 +210,8 @@ following graph structure.
 The precedance constraints between two real-time subtasks is the
 consequence of a data sharing. The data sharing can be implicite, or
 explicite. Our language allows to explicitly specify communication
-patterns between two or more tasks by the mean of two keywords
-**dNode**, **share**.
+patterns between two or more tasks by the mean of token **dNode** and
+the primitive **share**.
 
 **dNode** allows to define the a shared buffer. Therefore it is
 characterized by its type, name and size. Here is an example:
@@ -294,7 +293,8 @@ tau={
     p1;
     par(p2,p3);
     p5;
-  }else {
+  }
+  else {
     if(B){
       p6;
     }
@@ -320,10 +320,58 @@ This example can be found in  *examples/conditional.c*.
 
 
 ### Alternative execution patterns: *alternatives* 
- 
+
+Programmers of embedded systems may implement the same functionalities
+in different ways as they may use accelerators. In fact, the target
+architectures may include different instruction set architecture
+processing units. Therefore, we provide to the programmer, structures
+to express alternative implementations of the same functionalities by
+the mean of **alta** primitive. In fact, this primitive can be used in
+a very similar way as **par** primitive, however it does not express
+parallelization of several nodes and subgraphs but that they are
+alternatives implementations of the same thing. Therefore, one one
+configuration must be selected and exected. The alternative
+implementation to choose is selected in the optimization step
+described in the package analysis (please refer to that package
+description). Here is an example of how the **alta** primitive can be
+used.
+
+
+```c
+Tag CPU, GPU;
+Node seq1(C=4, TAG=CPU);
+Node p1(C=4,PC=3,TAG=GPU);
+Node p2(C=2, TAG=CPU);
+Node seq2(C=1, TAG=CPU);
+
+Graph tau(T=50,D=40);
+tau={
+  seq1;
+  alta(p1,p2);
+  seq2;
+};
+
+generate(tau,"/tmp/gr.dot");
+```
+
+The example above expresses that task **tau** starts running by
+**seq1** subtask. Further, continues onward **p1** or **p2** to join
+back **seq2**, however the selection of **p1** or **p2** does not
+depend on an online condition as in the **if-then-else** structure but
+depend on the optimization and the analysis. The example above lead to
+the following graph:
+
+
+
 
 
 ## modular programming: *include* 
+
+To explore the design space, it may be more convinient to allow to
+modify software and hardware modules descriptions separatly from each
+other. Therefore, we provide the possibility to describe these modules
+in separate source files. The token **include <FILE_NAME>** has to be
+used before any of the current task instruction.
 
 
 
@@ -335,7 +383,7 @@ nodes having different timing behavior, i.e. they can have different
 periods and deadlines. Our description language supports such behavior
 by allowing to describe to node level, deadlines and periods, and by
 omitting them in the task description. However, the tasks description
-file must start with **MULTIPERIODIC MODULE** keyword.
+file must start with **MULTIPERIODIC MODULE** primitive.
 
 
 ## The digraph real-time tasks 

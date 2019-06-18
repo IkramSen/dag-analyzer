@@ -17,12 +17,12 @@ Graph tau(T=50,D=40);
 tau={
   seq1;
   if (C){
-   
     p1;
     par(p2,p3);
     p5;
-  }else {
-     if(B){
+  }
+  else {
+    if(B){
       p6;
     }
     else {
@@ -32,7 +32,5 @@ tau={
   }
   seq2;
 };
-
-
 
 generate(tau,"/tmp/gr.dot");
