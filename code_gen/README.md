@@ -4,7 +4,11 @@ This package is responsible for generating the task and subtasks code
 for a given task system under a heterogeneous platform. First, we
 assume that all alternative choices have been made in the real-time
 optimization and testing phase. Therefore, the task generation does
-not consider tasks with **alternative** nodes. 
+not consider tasks with **alternative** nodes.  We introduce our code
+generator using the example disclosed in the following figure: 
+
+
+<div style="text-align:center"><img src="figs/code_gen.png" /></div>
 
 ```c
 void * v13(){ 
