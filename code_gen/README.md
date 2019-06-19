@@ -10,11 +10,6 @@ generator using the example disclosed in the following figure:
 
 <div style="text-align:center"><img src="figs/code_gen.png" /></div>
 
-```c
-void * v13(){ 
- // The rest of the code 
-}
-```
 
 
 Mainly three files are generated: **main.cpp**, **tasks.cpp** and
@@ -28,6 +23,13 @@ multiperiodic task sets (communicating tasks may have different
 periods), each thread is periodic it self. However, if all subtasks of
 the same task share the same period, threads periodicity is ensured by
 the task thread. 
+
+
+```c
+void * v13(){ 
+ // The rest of the code 
+}
+```
 
 For each task we generate two parts : The initialization part, and the
 periodic part.
