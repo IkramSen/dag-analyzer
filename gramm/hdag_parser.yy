@@ -209,8 +209,12 @@ complex_exp:
     task::Task * tau  = new task::Task(-1,l_);
     driver.temp_tasks->add_at_head(new common::Node<task::Task *>(tau)); 
   }
+  printf("really \n");
+  tau->to_dot("/tmp/ttol.dot");
   tau->link_new_entry(s);
+  tau->to_dot("/tmp/attol.dot");
   driver.temp_tasks->tail()->el->link_task_after(tau);
+  
 }
 
 suite: "identifier" ";"

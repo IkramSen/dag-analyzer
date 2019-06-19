@@ -361,9 +361,7 @@ depend on an online condition as in the **if-then-else** structure but
 depend on the optimization and the analysis. The example above lead to
 the following graph:
 
-
-
-
+<div style="text-align:center"><img src="figs/alternative.png" /></div>
 
 ## modular programming: *include* 
 

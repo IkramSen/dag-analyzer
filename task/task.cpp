@@ -435,12 +435,15 @@ namespace task {
    */
   void Task::link_new_entry(Subtask * s){
     add_subtask(s);
+    
     common::Node<Subtask *> * tail = subtasks->tail();
     common::List<Subtask *>  * L = list_entries();
-    common::Node<Subtask *> * curr = L->head;
-    for (int i=0;i<L->size;i++)
+    for (int i=0;i<L->size;i++){
+      common::Node<Subtask *> * curr = L->_get(i);
       if (tail->t_id!=curr->t_id)
-	link_two_subtasks(tail,L->_get(i));
+	link_two_subtasks(tail,curr);
+
+    }
   }
 
   /**
