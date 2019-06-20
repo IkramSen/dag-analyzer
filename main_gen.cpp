@@ -79,7 +79,10 @@ int main(int arc, char** argv) {
 
 
 
+  task::Buffer * buff = new task::Buffer("buff_1", "int",10);
+  task::Communication * comm = new task::Communication(v1->el, v2->el, buff); 
 
+  tau->add_communication(comm);
   
 
   
