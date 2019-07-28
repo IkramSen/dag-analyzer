@@ -1,6 +1,7 @@
 # Code generator description 
+Author : Houssam-Eddine Zahaf
 
-This package is responsible for generating the task and subtasks code
+This package is responsible for generating the task and sub-tasks code
 for a given task system under a heterogeneous platform. First, we
 assume that all alternative choices have been made in the real-time
 optimization and testing phase. Therefore, the task generation does
@@ -13,18 +14,18 @@ generator using the example disclosed in the following figure:
 
 
 Mainly three files are generated: **main.cpp**, **tasks.cpp** and
-**tasks.hpp**. The correctness and the deadlock avoidance are granteed
+**tasks.hpp**. The correctness and the deadlock avoidance are granted
 by the acylic nature of the input graph. If the user tends to call
 other, non called kernel, he has to ensure him self, that no deadlock
 can occur.
 
 
 
-## Subtask code generation
+## Sub-task code generation
 
 Each sub-task is implemented using a thread. If we consider
 multiperiodic task sets (communicating tasks may have different
-periods), each thread is periodic it self. However, if all subtasks of
+periods), each thread is periodic it self. However, if all sub-tasks of
 the same task share the same period, threads periodicity is ensured by
 the task thread. 
 
@@ -46,17 +47,17 @@ periodic part.
 
 
 
-### The generation of subtask init code
+### The generation of sub-task init code
 
 The task initialization step has the goal to init the different
-variables, scheduler parameters, ... to proprely execute the subtask.
+variables, scheduler parameters, ... to properly execute the sub-task.
 
-For the task **v13** starts its subtask init code by setting its
+For the task **v13** starts its sub-task init code by setting its
 affinity is partitioned scheduling is considered. Therefore, the CPU
 set takes in its first parameter **1** as the **v13** is meant to be
-allcoated on the core indexed by **1**.  We check if the subtask
-affinity has been succefull achieved, otherwise the subtask is
-dropped. The init code for subtask **v13** is presented in the
+allocated on the core indexed by **1**.  We check if the sub-task
+affinity has been successfully achieved, otherwise the sub-task is
+dropped. The init code for sub-task **v13** is presented in the
 following listing:
 
 ```c
@@ -73,12 +74,12 @@ following listing:
   } 
 ``` 
 
-### The generation of subtask  looped code
+### The generation of sub-task  looped code
 
-As any real-time task has to be repetive, the subtask code is nested
+As any real-time task has to be recurrent, the sub-task code is nested
 inside a **while** loop. Therefore the task looping code is inserted
-just after the subtask init code. The body of the loop task depend of
-the subtask type as disclosed in the rest of this discription.
+just after the sub-task init code. The body of the loop task depend of
+the sub-task type as disclosed in the rest of this description.
 
 ```c
   while(1) {
@@ -92,20 +93,20 @@ the subtask type as disclosed in the rest of this discription.
 ### Compute Node "COMPUTE"
 
 
-In the case of a **COMPUTE** task, the subtask code is simple to 
+In the case of a **COMPUTE** task, the sub-task code is simple to 
 generate. The task has to wait for all its predecessors. Therefore,  
 each link between the task and its predecessors is translated by a
 semaphore generation. The semaphore variable is global, therefore any
 node within the same task may access, acquire and free the
-semaphore. However, only the concerned subtasks are calling
+semaphore. However, only the concerned sub-tasks are calling
 **sem_wait** and **sema_post** primitives. Similarly, a compute
-subtask generates a semaphore between it and each of its
-sucessors. For its predecessor a subtask calls **sema_wait** primitive
+sub-task generates a semaphore between it and each of its
+successors. For its predecessor a sub-task calls **sema_wait** primitive
 and calls the **sema_post** for its successors. By convention and to
-avoid redeclaring the same semaphores, each semaphore variable name is
+avoid redefining the same semaphores, each semaphore variable name is
 compound by **src_dst_sem** where **src** is the label of the source
-subtask, **dst** for destination subtask. Between the both semaphore
-groups the user may insert its subtask code (processings).
+sub-task, **dst** for destination sub-task. Between the both semaphore
+groups the user may insert its sub-task code (processing).
 
 
 ```c
@@ -125,11 +126,11 @@ First, we highlight that for each CONDITION node, it exists a
 CCONDTION node.  Conditional nodes are a special. In fact they do not
 achieve computation itself, but they act like a synchronization points
 to all its predecessors. Therefore a **sema_wait** is called in a
-similar way as a COMPUTE node. However, for its sucessors, it does not
-free them all as in a COMPUTE subtask but only one of its two
-sucessors is released according to a given condition. The condition
-name is generated as the subtask label contatenated with *_c*. For
-example for subtask **v6**, its condition variable name is
+similar way as a COMPUTE node. However, for its successors, it does not
+free them all as in a COMPUTE sub-task but only one of its two
+successors is released according to a given condition. The condition
+name is generated as the sub-task label concatenated with *_c*. For
+example for sub-task **v6**, its condition variable name is
 **v6_c**. The condition is evaluated online. For sake of emulation, we
 update the condition by generating a random number between -10 and 10
 in the following example.
@@ -152,8 +153,8 @@ in the following example.
    }
 ```
 
-When the condition is closed, only one of its sucessors will notify
-its suceesors so the task can continues its execution. Therefore, for
+When the condition is closed, only one of its successors will notify
+its successors so the task can continues its execution. Therefore, for
 each condition, we have a closing node that aims to wait for the
 correct semaphore that have been signaled. This node has a type
 **CCONDITION**. A node of a CCONDITION is blocked waiting for the
@@ -187,14 +188,14 @@ after the first semaphore hit. This constraint will be removed soon.
 
 
 Two tasks or more may read/write the same data structures. If the
-shared buffers are explicitly mentionned, there read/write operations
+shared buffers are explicitly mentioned, there read/write operations
 and accesses are generated by our code generator.
 
 
 
 For example, we define here a communication between **v1** and **v2**
 of a buffer called **buff** compound of 10 int elements. Buffers are
-declared as gloval variables as well as their protection semaphores if
+declared as global variables as well as their protection semaphores if
 they are defined.
 
 
@@ -208,7 +209,7 @@ The communication between **v1** and **v2** source code is generated as follows:
 ```
 
 We highlight that this code is for a protected buffer (semaphores are
-also genrated).
+also generated).
 
 The read buffer code is inserted after the wait for predecessors
 semaphores instructions, and the write buffers code is inserted before
@@ -221,8 +222,8 @@ natively, AER execution model.
 
 First, we highlight that our code generator for the GPU kernels
 supports for the moment only CUDA. CUDA kernels can not be implemented
-in a similar way as CPU threads. In fact, CUDA dissallows sleeping
-tasks to increase throughput, therefore the gpu kernels are called
+in a similar way as CPU threads. In fact, CUDA disallows sleeping
+tasks to increase throughput, therefore the GPU kernels are called
 inside periodic CPU threads. Our code generator allows also to
 generate the source code for the GPU kernel and its related calls for
 other GPU Kernels if needed. 
@@ -235,8 +236,8 @@ engines as any other COMPUTE kernel. The memory copies are
 
 ## Task code generation 
 
-The task code is at its turn devided between initialization part and
-the reccurrent part. The initialization part is in charge to
+The task code is at its turn divided between initialization part and
+the recurrent part. The initialization part is in charge to
 initialize all semaphores and lunching threads within the same
 task. As in the following example : 
 
@@ -255,14 +256,14 @@ task. As in the following example :
  .....
  ```
  
-The second step is the reccurent task behavior initialization. Here
+The second step is the recurrent task behavior initialization. Here
 the implementation can be either periodic (as in the following
 example), or triggered by an event. 
 
 
-Therefore when the wakeup event/time is up, the source subtasks are
+Therefore when the wake-up event/time is up, the source sub-tasks are
 freed by signaling their semaphores. And the task waits to be freed by
-the sink subtasks. and the task must be sleep, until the task can be
+the sink sub-tasks. and the task must be sleep, until the task can be
 activable by using **clock_nanosleep** as in the following example.
 
 

@@ -12,6 +12,12 @@ bb;
 };
 
 k={
+if(A){
+C;}
+else {
+D;
+}
+
 par(ff,g);
 cc;
 };
