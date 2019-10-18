@@ -1,19 +1,32 @@
 # HPC-DAG Grammar:
-Auteur : Houssam-Eddine Zahaf
+Author : Houssam-Eddine Zahaf
 
-
-This part of the HPC DAG Analyzer aims to provide a grammar to
-describe the hardware architecture and the software stack using the
-HPC DAG Model. Please, first overview the architecture and ssytem mode
-section of paper authored by Zahaf et el. entitled : **"The HPC DAG
-task Model for heterogeneous real-time system"**.
+This part of the HPC DAG Analyzer aims to provide a language to
+describe the hardware architecture and the software stack. Please,
+first overview the architecture and system mode section of paper
+authored by Zahaf et el. entitled : **"The HPC DAG task Model for
+heterogeneous real-time system"** and attached in analysis package.
 
 ## The hardware description : 
+
+A hardware platform is compound of a set of engines. Each engine is
+speciliazed to achieve a certain computation type, defined by its
+instruction set architecture (ISA). Different dodes may share the same
+ISA, but having different computation capabilites. They may be
+embedded on the same chip, or different chips. Therefore the
+communication costs between two engines having the same ISA may be
+different depending on the chip where they are. engines may have
+different scheduling policies, which can be global or
+partitioned. Here are the description of how to describe a hardware
+platform by examples.
+
+
+
+
 ## The software description :
 
-
-
-We introduce the different features of our langage by example. 
+We introduce the different features of our language to describe the
+software stack by examples.
 
 
 ### Simple example : LL Task model 
@@ -23,8 +36,8 @@ executed using a single thread, characterized by :
 
 - **C:**  The task worst case execution time 
 - **D:**  The task deadline
-- **T:**  The task period, the time duration between to activations of the same 
-- **PC:** The task preemtion cost, which is the cost to account, if this task is preempted
+- **T:**  The task period, the time duration between to activation of the same 
+- **PC:** The task preemption cost, which is the cost to account, if this task is preempted
 
 
 Each task definition is considered as a Graph, task **tau** can be defined as follows:
@@ -49,11 +62,11 @@ execution time that is equal to 4ms. To assign this node to the task
 tau={dd;};
 ``` 
 
-This is equivalent of defining a periodic Liu and Layland task, having
+This is equivalent of defining a periodic Liu and LayLand task, having
 a period of 50 ms, a deadline of 40 ms, and worst case execution time
 of 4 ms.
 
-Further, the preemption cost may be defined using the tokken *PC* in
+Further, the preemption cost may be defined using the token *PC* in
 the node declaration, as well as the task TAG is a heterogeneous
 architecture is considered. For example:
 
@@ -65,10 +78,10 @@ defines that node **dd** has a preemption cost of 3 ms and can only
 execute within a GPU node. If **PC** is not explicitly mentioned, it
 is considered as equal to **0**. If the **TAG** is not specified, it
 is considered as the default **TAG**. The user may define extra
-parameters to a given subtask so it can be used for
+parameters to a given sub-task so it can be used for
 extra-functionalities that are not provided by the current version of
 the tool. In contrast to the other optional properties, he execution
-time property is mondatory, and an error is generated and compilation
+time property is mandatory, and an error is generated and compilation
 will be aborted if not available.
 
 The full example can be found in *examples/simple_1.c*.
@@ -114,7 +127,7 @@ Let now explain each line of the above listing. The first Line is
 similar to the Tags described in Hardware modeling section. Further,
 we describe each thread/functionality as in the previous example.
 Further, we describe the task behavior and composition, therefore the
-subtasks are ordered according to their appearance/calling order in
+sub-tasks are ordered according to their appearance/calling order in
 the task structure description block. Thus, the graph **tau** starts
 by seq1. Further, we find the primitive **par**, therefore all nodes
 between the parenthesis after par are supposed to be executed in
@@ -150,9 +163,9 @@ the full example can be found in the examples folder under the name
  
 A software module can be reused using **copy** operation. A **copy**
 operation allows copying the same sub graph structure between two or
-more subgraphs. The first operad (**sGraph**) should be the source
-subgraphs, and all the rest **sGraphs**s are destination
-nodes. Further, each subgraph can be used in the same, or in different
+more sub-graphs. The first operand (**sGraph**) should be the source
+sub-graphs, and all the rest **sGraphs**s are destination
+nodes. Further, each sub-graph can be used in the same, or in different
 tasks. Here is an example of the use of token **sGraph** and **copy**.
 
 ```c++
@@ -185,11 +198,11 @@ generate(tau,"/tmp/gr.dot");
 ```
 
 In the example above, we first define three nodes **p1**, **p2** and
-**p3**. Further, we define $s1$ as floows: **p1** than parallel
+**p3**. Further, we define $s1$ as flows: **p1** than parallel
 section compound of **p2** and **p3**. Further, we copy **s1** to
 **s2** and to **s3**. Therefore, **s2** and **s3** have the same
 structure as **s1**: the same number of nodes and the same edges
-between nodes (**s1** and **s2** are isomorphe graphs). Each node of
+between nodes (**s1** and **s2** are isomorphic graphs). Each node of
 **s1** has an equivalent node in **s2** having the same
 characteristics.
 
@@ -207,9 +220,9 @@ following graph structure.
 
 ### Data sharing: *locks and buffers*
 
-The precedance constraints between two real-time subtasks is the
-consequence of a data sharing. The data sharing can be implicite, or
-explicite. Our language allows to explicitly specify communication
+The precedence constraints between two real-time sub-tasks is the
+consequence of a data sharing. The data sharing can be implicit, or
+explicit. Our language allows to explicitly specify communication
 patterns between two or more tasks by the mean of token **dNode** and
 the primitive **share**.
 
@@ -222,10 +235,10 @@ dNode buff(type="int", size=15);
 ```
 
 Further, a **dNode** can be shared between several
-subtasks. Logically, the shared buffers must be defined between
-subtask and their precedessor and their successor. Our language does
+sub-tasks. Logically, the shared buffers must be defined between
+sub-task and their predecessor and their successor. Our language does
 not explicitly force such constraint and let the semantic on the
-charge of the plaform user. for example to share data between **p1**
+charge of the platform user. for example to share data between **p1**
 and **p2** and **seq2** of the example of the previous section, we can
 use **dNode buff** as follows : 
 
@@ -241,17 +254,17 @@ the full example can be found in the examples folder under the name
 
 
 In complex real-time task may evaluate online conditions, so to
-execute a given subtask or another. These conditional behavior have to
+execute a given sub-task or another. These conditional behavior have to
 be specified in the task modelization to allow tight evaluation of the
 workload and hence to study precisely the schedulabilty using typical
 **if-then-else** control structures. 
 
 For each **if-then-else** the user must define the condition that it
-needs to be evaluated by the mean of keywork **Condition**.
+needs to be evaluated by the mean of keyword **Condition**.
 
 
 For example if according to condition **C**, we may either execute
-subtask **p1** or subtask **p2**. as in the following example
+sub-task **p1** or sub-task **p2**. as in the following example
 
 
 ```c++
@@ -268,7 +281,7 @@ else {
 
 The conditional node declaration must be done out of the task
 structure description, however the **if-then-else** structure it self,
-must be used inside the subtask code. Here is a complete example: 
+must be used inside the sub-task code. Here is a complete example: 
 
 ```c++
 Tag CPU, GPU;
@@ -309,7 +322,7 @@ tau={
 generate(tau,"/tmp/gr.dot");
 ```
 The example above tests first condition C to either continue
-onwared on **p1** or to test condition **B**. It may further
+onward on **p1** or to test condition **B**. It may further
 continue on one of both sides of the conditions.  The resulted
 graph from the example is as follows: 
 
@@ -328,9 +341,9 @@ processing units. Therefore, we provide to the programmer, structures
 to express alternative implementations of the same functionalities by
 the mean of **alta** primitive. In fact, this primitive can be used in
 a very similar way as **par** primitive, however it does not express
-parallelization of several nodes and subgraphs but that they are
+parallelization of several nodes and sub-graphs but that they are
 alternatives implementations of the same thing. Therefore, one one
-configuration must be selected and exected. The alternative
+configuration must be selected and executed. The alternative
 implementation to choose is selected in the optimization step
 described in the package analysis (please refer to that package
 description). Here is an example of how the **alta** primitive can be
@@ -355,7 +368,7 @@ generate(tau,"/tmp/gr.dot");
 ```
 
 The example above expresses that task **tau** starts running by
-**seq1** subtask. Further, continues onward **p1** or **p2** to join
+**seq1** sub-task. Further, continues onward **p1** or **p2** to join
 back **seq2**, however the selection of **p1** or **p2** does not
 depend on an online condition as in the **if-then-else** structure but
 depend on the optimization and the analysis. The example above lead to
@@ -365,8 +378,8 @@ the following graph:
 
 ## modular programming: *include* 
 
-To explore the design space, it may be more convinient to allow to
-modify software and hardware modules descriptions separatly from each
+To explore the design space, it may be more convenient to allow to
+modify software and hardware modules descriptions separately from each
 other. Therefore, we provide the possibility to describe these modules
 in separate source files. The token **include <FILE_NAME>** has to be
 used before any of the current task instruction.
@@ -376,7 +389,7 @@ used before any of the current task instruction.
 
 ## multiperiodic real-time tasks 
 
-In several real-time contextes, a tasks may be compound of a different
+In several real-time contexts, a tasks may be compound of a different
 nodes having different timing behavior, i.e. they can have different
 periods and deadlines. Our description language supports such behavior
 by allowing to describe to node level, deadlines and periods, and by
@@ -387,9 +400,9 @@ file must start with **MULTIPERIODIC MODULE** primitive.
 ## The digraph real-time tasks 
 
 
-In a more complex scenario, subtasks may communicate with their direct
-and indirect predecessors. This, functionality is automatiqually
+In a more complex scenario, sub-tasks may communicate with their direct
+and indirect predecessors. This, functionality is automatically
 supported in a similar way as the multiperiodic real-time
 task. However, the semantics of communications is different. This mode
-is not fully supported yet by the other componnents such as the
+is not fully supported yet by the other components such as the
 real-time analyzer and code generator. 

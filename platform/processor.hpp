@@ -31,6 +31,8 @@ namespace platform{
     void _id(int id);
     int _id();
 
+    void print_ts();
+    Processor(int id) ;
     void _ts(task::Taskset *ts);
     task::Taskset *_ts();
 

@@ -55,6 +55,7 @@ namespace task {
     int id;
     int D;
     int T;
+    int C;
     int **graph;
     int TAG;
     std::string label;
@@ -76,6 +77,16 @@ namespace task {
 				 common::List<common::List<Subtask *> *>  * pp);
   
 
+
+
+    Task(int id, int C, int D, int T);
+
+
+
+    int _id();
+    int _C();
+    double Liu_U();
+    Task * copy_params();
     common::List<Subtask *> *  find_first_condition(common::Node<Subtask *> *  v);
     
     Task * copy_partial(int id);

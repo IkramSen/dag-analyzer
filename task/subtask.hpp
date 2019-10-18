@@ -53,5 +53,4 @@ namespace task {
     void display();
   };
 }
-
 #endif

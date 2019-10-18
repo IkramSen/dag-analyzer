@@ -3,6 +3,15 @@
 
 namespace task {
 
+
+
+  Task::Task(int id, int C, int D, int T){
+      this->id = id;
+      this->C = C;
+      this->D = D;
+      this->T = T; 
+  }
+
   // Houssam : Not sure that this is used & working now
   /** 
    * Compute the first conditions in the successors of the the input sub-task
@@ -144,29 +153,44 @@ namespace task {
     return tau;
   }
 
+
+
+  
+  // /**
+  //  * Copy exactely the same task without sharing structure
+  //  * @return a reference to the new task object 
+  //  */  
+  // Task * Task::copy_partial(){
+  //   PRINT_DEBUG("COPY PARTIAL begin : No PARAM\n");
+  //   common::List<Subtask *> *l = new common::List<Subtask *> ();
+  //   for (int i=0;i<subtasks->size;i++){
+  //     common::Node<Subtask *> *curr = subtasks->_get(i);
+  //     Subtask * s  = new Subtask(curr->el->_id(), curr->el->_C(), curr->el->_PC(),
+  // 				 curr->el->_type(), curr->el->_TAG());
+  //     common::Node<Subtask *> *n = new common::Node<Subtask *>(curr,SAVE);
+  //     n->el = s; 
+  //     n->el->_label(curr->el->_label());
+  //     l->add_at_tail(n);
+  //     n->el->_label(curr->el->_label()+std::to_string((curr->el->_id())));
+  //   }
+  //   Task * tau = new Task(-1,l);
+  //   for (int i=0;i<subtasks->size;i++)
+  //     {
+  // 	for (int j=0;j<subtasks->size;j++)
+  // 	  tau->_graph()[i][j]=graph[i][j]; 
+  //     }
+  //   return tau;
+  // }
+
+
   /**
    * Copy exactely the same task without sharing structure by
    * incrementing incrementing sub-tasks indexes by s_id 
    * @param s_id The index starting params
    * @return a reference to the new task object
    */
-  Task * Task::copy_partial(int s_id){
-    PRINT_DEBUG("COPY PARTIAL begin : INT PARAM\n");
-    common::List<Subtask *> *l = new common::List<Subtask *> ();
-    for (int i=0;i<subtasks->size;i++){
-      common::Node<Subtask *> *curr = subtasks->_get(i);
-      Subtask * s  = new Subtask(s_id+i, curr->el->_C(), curr->el->_PC(), curr->el->_type(), curr->el->_TAG());
-      common::Node<Subtask *> *n = new common::Node<Subtask *>(curr,SAVE);
-      n->el = s; 
-      n->el->_label(curr->el->_label());
-      l->add_at_tail(n);
-      n->el->_label(curr->el->_label()+std::to_string((s_id+i)));
-    }
-    Task * tau = new Task(-1,l);
-    for (int i=0;i<subtasks->size;i++)
-	for (int j=0;j<subtasks->size;j++)
-	  tau->_graph()[i][j]=graph[i][j]; 
-      
+  Task * Task::copy_params(){
+    Task * tau = new Task(this->_id(),this->_C(), this->_D(), this->_T());
     return tau;
   }
   
@@ -260,6 +284,12 @@ namespace task {
     return T;
   }
 
+  
+  int Task::_C(){
+    return this->C;
+  }
+
+  
   /**  
    * setter of  T 
    * @param T The Period T to set 
@@ -851,6 +881,9 @@ namespace task {
   }
 
 
+  double Task::Liu_U(){
+    return C/((double)T);
+  }
 
   /**
    * Calculate the task execution time.
@@ -1038,6 +1071,15 @@ namespace task {
     }
   }
 
+  /** 
+   *@return : returns the task id 
+
+  */
+  int Task::_id(){
+      return this-> id;
+    }
+
+
   // generates the predecessors of a given subtask
   /**
    * Generate predecessor subtask list of the given subtask
@@ -1122,6 +1164,7 @@ namespace task {
    * @return The copy of the task
    */
   Task* Task::copy(){
+    printf("here we are \n");
     Task *copy = new Task(this->id,this->subtasks->copy());
     if(elems!=NULL)
       copy->_elems(elems->copy());

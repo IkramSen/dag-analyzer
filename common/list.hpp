@@ -313,7 +313,9 @@ namespace common {
 	return true;
       }
       if (current == NULL)
-        return false;
+        { 
+	  return false;
+	}
       last->next = current->next;
       size--;
       return true;

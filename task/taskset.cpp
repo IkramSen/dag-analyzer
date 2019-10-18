@@ -37,7 +37,7 @@ namespace task{
 
 
   /** 
-   * removes a task to the current taskset 
+   * removes a task to bthe current taskset 
    * @param tau The task to remove
    */
   bool  Taskset::remove(Task * tau){
@@ -229,8 +229,65 @@ namespace task{
   Taskset* Taskset::copy(){
     Taskset *copy = new Taskset(this->id);
     common::List<Task *> *copylist = new common::List<Task *>();
-    for (int i = 0; i < this->list->size; i++) 
+    for (int i = 0; i < this->list->size; i++) {
       copylist->add(this->list->get(i)->copy());
+    }
     return copy;
   }
+
+    /**
+   * Copy task set
+   * @return The new task set 
+   */
+  Taskset* Taskset::partial_copy(){
+    Taskset *copy = new Taskset(this->id);
+    common::List<Task *> *copylist = new common::List<Task *>();
+    for (int i = 0; i < this->list->size; i++) {
+      copylist->add(this->list->get(i)->copy_partial());
+    }
+    return copy;
+  }
+
+  
+  /**
+   * Copy task set
+   * @return The new task set for LIU and LAYLAND TASK MODEL 
+   */
+  Taskset* Taskset::params_copy(){
+    
+    Taskset *copy = new Taskset(this->id);
+    
+    common::List<Task *> *copylist = new common::List<Task *>();
+    for (int i = 0; i < this->list->size; i++) 
+      copylist->add(this->list->get(i)->copy_params());
+    return copy;
+  }
+
+
+
+  Taskset* Taskset::params_task_pointers(){
+    Taskset *copy = new Taskset(this->id);
+    common::List<Task *> *copylist = new common::List<Task *>();
+    for (int i = 0; i < this->list->size; i++) {
+      copylist->add_at_tail(new common::Node<Task *> (this->list->get(i)));
+    }
+    copy->_list(copylist);
+    return copy; 
+  }
+
+
+    /**
+   * Calculate the utilization of all the taskset's task using LIU and layland model
+   * @return The Taskset utilization.
+   */
+  double Taskset::Liu_U(){
+    double U = 0;
+    for (int i=0; i< list->size ; i++)
+      U +=  list->get(i)->Liu_U();
+    return U;
+  }
+ 
+
+
+  
 }

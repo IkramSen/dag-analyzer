@@ -1,10 +1,18 @@
 #include "processor.hpp"
 
 namespace platform{
-    Processor::Processor() {
-
+  Processor::Processor() {
+      this->ts = new task::Taskset(-1);
     }
 
+
+  Processor::Processor(int id) {
+    this->id=id; 
+    this->ts = new task::Taskset(id);
+  }
+
+
+  
     Processor::Processor(int id, int tag, task::Taskset* ts) {
         this->ts = ts;
         this->id = id;
@@ -14,10 +22,17 @@ namespace platform{
     void Processor::_id(int id){
         this->id = id;
     }
-
+  
     int Processor::_id(){
         return id;
     }
+
+  void Processor::print_ts(){
+    std::cout<<"[Proc : "<<_id()<<"=> ";
+    for (int i=0;i<ts->_size();i++)
+      std::cout<<ts->get(i)->_id()<<",";
+    std::cout<<"]"<<std::endl;
+  }
 
     void Processor::_ts(task::Taskset *ts){
         this->ts = ts;
