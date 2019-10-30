@@ -1,4 +1,6 @@
 #include "task.hpp"
+#include "bloc.hpp"
+
 
 
 namespace task {
@@ -6,11 +8,151 @@ namespace task {
 
 
   Task::Task(int id, int C, int D, int T){
-      this->id = id;
-      this->C = C;
-      this->D = D;
-      this->T = T; 
+    this->id = id;
+    this->C = C;
+    this->D = D;
+    this->T = T; 
   }
+
+  //limited preemption task model
+  Task::Task(int id, int C, int D, int T, int q, common::List<Bloc *> *blocs){
+    this->id = id;
+    this->C = C;
+    this->D = D;
+    this->T = T;
+    this->q = q;
+    this->blocs = blocs;
+  }
+
+  int * Task::compute_DK (common::List<task::Task *>  *tasks, int nbTsk){
+    printf("******************* compute DK function*****************************\n"); 
+  
+    int size= nbTsk*nbTsk; 
+    int *deadlines =  (int*) malloc(size * sizeof(int));
+    int l=-1;
+    int k=0; // indice pour Dk deadlines
+    int g=0;
+    for (int i = 0 ; i<nbTsk; i++){  
+      common::Node <task::Task *> *curr = tasks->head;
+      l=l+1;
+      for (int j = 0 ; j<nbTsk; j++){ //loop on tasks
+      	g=(l *curr->el->_T())+ curr->el->_D();
+        printf(" la valeur de g= %d \n", g);
+	bool notExiste=1 ;
+	if (g<=725 && notExiste){ 
+	  deadlines[k++]= (l *curr->el->_T())+ curr->el->_D();
+	}        
+	curr=curr->next;
+      } 
+    } 
+    //printf(" nombre deadline= %d \n", k); 
+    return deadlines;
+  }
+
+  // dbf exacte preemptif a ajouter dans le switch 
+  int Task::dbf(common::List<task::Task *>  *tasks, int D) {
+    int i=0;
+    int dbfF = 0;
+    common::Node <task::Task *> *current = tasks->head;
+    for (i = 0 ; i<tasks->size; i++){
+      dbfF= dbfF+((current->el->_C()) * (floor((D+current->el->_T()-current->el->_D())/current->el->_T())));
+      current=current->next;
+    }
+    return dbfF;		
+  }
+
+  int Task::compute_LEN_NPR(common::List<task::Task *>  *tasks,int *deadlines, int nb){
+    int size= nb*nb;
+    int *SLACKS =  (int*) malloc(size * sizeof(int));
+    int q=0;
+    SLACKS[1]= deadlines[1]- dbf(tasks,deadlines[1]);
+    for(int k=2; k<=8; k++){
+      SLACKS[k]= std::min(SLACKS[k-1], deadlines[k]-(int) dbf(tasks,deadlines[k]));
+      // std::cout<< "  deadlines[k] " << deadlines[k] <<std::endl; 
+      // std::cout<< " (int) dbf(tasks,deadlines[k]) " <<(int) dbf(tasks,deadlines[k]) <<std::endl;      
+      // std::cout<< " SLACKS[k] pour chaque deadline " <<SLACKS[k] <<std::endl; 
+      if (SLACKS[k] < 0)  std::cout<< " ERROR" <<std::endl;
+      if (this->_id() != 1) {
+	if (this->_D() == deadlines[k])  { 
+	  q= std::min(SLACKS[k],this->_C());
+	  //std::cout<< " SLACKS[k] pour chaque deadline " <<SLACKS[k] <<std::endl; 
+	}else 
+	  q=this->_C();
+      }else 
+	q=this->_C();
+    } 
+    return q;
+  }
+  task::Bloc* Task:: selectOp_Point(int k, common::List<task::Bloc *> *blocs ){
+    task::Bloc* blMin=blocs->get(0);
+       
+    for (int p = 1; p<blocs->size; p++){ 
+      if(blMin->_PC()> blocs->get(p)->_PC()){
+	blMin=  blocs->get(p);
+      }
+    }
+    return blMin;
+  }
+
+
+  int Task::Optimal_Selection_PPP( int q, common::List<task::Bloc *> *blocs ){
+    common::List<task::Bloc *> * prev=  new common::List<task::Bloc *>();
+    common::List<task::Bloc *> * List_EFC= new common::List<task::Bloc *>(); // list of effect blocs
+    //q=8;
+    int C_Lp= 0;
+    int POver_Head=0;
+    int remove=0;
+    int arret=0; 
+    prev->add_at_tail(new common::Node<task::Bloc * >(blocs->head->el)); // la liste contient un seul bloc au debut
+    
+    blocs->get(0)->_BlocTime(blocs->get(0)->_Len());
+  
+    for (int k = 1; k<blocs->size; k++){ 
+     
+      prev->add_at_tail(new common::Node<task::Bloc * >(blocs->get(k))); 
+      arret=  blocs->get(k-1)->_BlocTime()+ blocs->get(k)->_Len();
+      if(arret > q) {
+	//	prev->display();
+	task::Bloc * opPoint= selectOp_Point(k, prev); 
+	List_EFC->add_at_head(new common::Node<task::Bloc * >(opPoint));
+	printf("  ID added task %d \n", opPoint->_id());
+      }
+      while( arret > q ){
+	remove= 1;
+	arret= arret - prev->head->el->_Len();
+	prev->remove(prev->head->el);
+	if(prev->size == 0) return 0; 
+	// prev->display();
+      }
+      if(prev->size == 0) return 0; 
+      int part1= blocs->get(k-1)->_BlocTime()+ blocs->get(k)->_PC()+blocs->get(k)->_Len();
+      int part2= blocs->get(k-1)->_BlocTime()+blocs->get(k)->_Len();
+      int min11=std::min(part1,part2);
+      blocs->get(k)->_BlocTime(min11); 
+    }
+    if(List_EFC->size ==0)
+      {
+	printf(" ** ----------------------------------------------------** \n");
+	printf(" aucun point de preemption n'a été choisi \n");
+	printf(" ** ----------------------------------------------------** \n");
+      }
+    else {
+      POver_Head= 0;
+      List_EFC->display();
+      printf("  **----------------------------------------------------** \n");
+      printf("\t  Selected preemption points are : \n");
+      for (int h = 0; h<List_EFC->size; h++){ 
+	POver_Head= POver_Head + List_EFC->get(h)->_PC();
+	printf(" \t \t [ pp%d= %d ] \n",List_EFC->get(h)->_id(), List_EFC->get(h)->_PC());
+      }
+      printf(" **----------------------------------------------------** \n");
+    }
+    C_Lp= this->_C()+ POver_Head;
+    return POver_Head;
+
+  }
+
+
 
   // Houssam : Not sure that this is used & working now
   /** 
@@ -313,6 +455,25 @@ namespace task {
   }
 
   /** 
+      Getter of q
+  */ 
+
+  int Task::_q(){
+    return q;
+  }
+
+  /**  
+   * setter of q 
+   * @param q The q to set 
+   */
+
+  void  Task::_q(int q){
+    this->q = q;
+  }
+
+
+
+  /** 
       Getter of subtasks list 
   */ 
   common::List<Subtask *> * Task::_subtasks(){
@@ -363,6 +524,14 @@ namespace task {
     return this->elems;
   }
   
+
+  /** 
+      Getter of tasks Blocs 
+  */ 
+  common::List<task::Bloc *>* Task::_blocs(){
+    return this->blocs;
+  }
+
   /**  
    * setter of Elems Elmentary task list 
    * @param Elems Elmentary task list 

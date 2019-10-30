@@ -3,6 +3,7 @@
 
 #include "../common/list.hpp"
 #include "subtask.hpp"
+#include "bloc.hpp"
 #include "../platform/processor.hpp"
 #include "taskset.hpp"
 #include "../analysis/analysis_vars.hpp"
@@ -37,6 +38,11 @@
 
 
 
+//struct bloc {
+ // int id;
+ // int longueur_Bloc;
+ // int PP_cost;
+//}; 
 namespace platform{
   class Processor;
 }
@@ -67,7 +73,13 @@ namespace task {
     common::List<Communication *> * comms;
     common::List<common::List<Subtask *> *> *paths;
 
-    
+    // int **ppp; //matrice avec les qi dans chaque paltform
+    // limited preemption parameters
+    int q;
+    common::List<Bloc *> *blocs;
+    common::List<Bloc *> *NPR;
+    //bloc *ppp; 
+   //bloc *NPR;
     
   public:
 
@@ -78,10 +90,24 @@ namespace task {
   
 
 
+    //for limited preemption model
+    Task(int id, int C, int D, int T, int q, common::List<Bloc *> *blocs);
+    int _q();
+    void _q(int q);
+    //bloc * _ppp();  
+    //void _ppp(bloc * ppp);
+    common::List<task::Bloc *>* _blocs(); 
+    int * compute_DK (common::List<task::Task *>  *tasks, int nb);
+    int compute_LEN_NPR(common::List<task::Task *>  *tasks,int *deadlines,int nb);
+    int dbf(common::List<task::Task *>  *tasks, int D); 
+    int Optimal_Selection_PPP( int q,common::List<Bloc *> *blocs);
+    task::Bloc* selectOp_Point(int k,common::List<task::Bloc *> *blocs );
+    //void SortD(int *deadlines, int nbr);
+
+
 
     Task(int id, int C, int D, int T);
-
-
+    // Task(int id, int C, int D, int T, int **ppp);
 
     int _id();
     int _C();
